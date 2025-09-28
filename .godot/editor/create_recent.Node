@@ -1,0 +1,12 @@
+CharacterBody3D
+WorldEnvironment
+OmniLight3D
+Camera3D
+CSGBox3D
+StaticBody3D
+Node3D
+MeshInstance3D
+CollisionShape3D
+RigidBody3D
+Area3D
+CSGMesh3D

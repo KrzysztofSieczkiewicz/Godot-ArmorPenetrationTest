@@ -1,0 +1,12 @@
+63f7b34db8d8cdea90c76aacccf841ec
+::res://::1759075001
+icon.svg::CompressedTexture2D::2189156700988013759::1759066568::1759066571::1::::<><><>0<>0<>97c3528e783fd79949e370f55f3e1348<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
+Main.tscn::PackedScene::3163037068966301021::1759072974::0::1::::<><><>0<>0<><>::uid://bhg2wj0ealksq::::res://Cannon/Cannon.tscn<>uid://jupn6afamq04::::res://Armor/Armor.tscn
+::res://Armor/::1759071001
+Armor.tscn::PackedScene::673922746487270191::1759071001::0::1::::<><><>0<>0<><>::
+::res://Cannon/::1759072974
+Cannon.gd::GDScript::7861075520637122162::1759072974::0::1::::<>Node<><>0<>0<><>::
+Cannon.tscn::PackedScene::2891808013466736564::1759071534::0::1::::<><><>0<>0<><>::uid://dj871axv2tx03::::res://Cannon/Cannon.gd
+::res://Projectile/::1759074460
+Projectile_AP.gd::GDScript::9196071389820524755::1759074460::0::1::::<>CharacterBody3D<><>0<>0<><>::
+Projectile_AP.tscn::PackedScene::2198170355892794184::1759074460::0::1::::<><><>0<>0<><>::uid://d4av7m1l5f7g6::::res://Projectile/Projectile_AP.gd

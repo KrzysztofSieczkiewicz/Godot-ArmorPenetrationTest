@@ -1,0 +1,36 @@
+[gd_scene load_steps=5 format=3 uid="uid://blcg01yfyvqgj"]
+
+[ext_resource type="PackedScene" uid="uid://bhg2wj0ealksq" path="res://Cannon/Cannon.tscn" id="1_glv2v"]
+[ext_resource type="PackedScene" uid="uid://jupn6afamq04" path="res://Armor/Armor.tscn" id="2_uu6xs"]
+
+[sub_resource type="Environment" id="Environment_uu6xs"]
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_r0du0"]
+
+[node name="Main" type="Node3D"]
+
+[node name="World" type="Node3D" parent="."]
+
+[node name="Floor" type="CSGBox3D" parent="World"]
+use_collision = true
+size = Vector3(20, 0.5, 20)
+
+[node name="OmniLight3D" type="OmniLight3D" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.4613647, 4.0022187, 0)
+light_energy = 16.0
+light_indirect_energy = 5.35
+light_size = 1.0
+omni_range = 4096.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="World"]
+environment = SubResource("Environment_uu6xs")
+camera_attributes = SubResource("CameraAttributesPractical_r0du0")
+
+[node name="Cannon" parent="." instance=ExtResource("1_glv2v")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 8)
+
+[node name="Armor" parent="." instance=ExtResource("2_uu6xs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -9)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-4.222196e-08, -0.25881907, 0.9659258, -1.131334e-08, 0.9659259, 0.25881907, -1, 8.881784e-16, -4.371139e-08, 7.065508, 4, -3.3647938)
