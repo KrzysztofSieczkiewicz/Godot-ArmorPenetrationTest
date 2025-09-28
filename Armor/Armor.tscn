@@ -7,6 +7,7 @@ size = Vector3(3, 2, 0.1)
 size = Vector3(3, 2, 0.1)
 
 [node name="Armor" type="RigidBody3D"]
+gravity_scale = 0.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("BoxShape3D_6nrul")
