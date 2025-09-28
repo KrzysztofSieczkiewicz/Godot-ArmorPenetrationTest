@@ -1,31 +1,49 @@
 extends CharacterBody3D
 
-@export var SPEED: float= 50.0;
-
-@onready var mesh = $MeshInstance3D
-@onready var collider = $CollisionShape3D
+@export var MUZZLE_VELOCITY: float= 600.0;
+@export var MASS: float = 6.79;
+@export var DRAG_FACTOR: float = 0.05; # Note: DRAG_FACTOR replaces the complex (1/2 * rho * A * C_d) physics term
 
 var initial_direction: Vector3 = Vector3.ZERO 
 
 func _ready() -> void:
 	if initial_direction != Vector3.ZERO:
-		velocity = initial_direction * SPEED
+		velocity = initial_direction * MUZZLE_VELOCITY
 		look_at(global_position + velocity, Vector3.UP)
 
 func _physics_process(delta: float) -> void:
-	# calculate movement vector:
-	var motion: Vector3 = velocity * delta
+	# Apply gravity
+	velocity += get_gravity() * delta 
 	
+	# Rotate the projectile to match the velocity vector
+	if velocity.length_squared() > 0.01:
+		var current_speed = velocity.length()
+		var drag_force_magnitude = DRAG_FACTOR * (current_speed * current_speed)
+		var drag_acceleration_magnitude = drag_force_magnitude / MASS
+		var drag_deceleration = velocity.normalized() * drag_acceleration_magnitude
+		velocity -= drag_deceleration * delta
+		 
+		look_at(global_position + velocity, Vector3.UP)
+	
+	# Calculate and handle motion vecotr
+	var motion: Vector3 = velocity * delta
 	var collision: KinematicCollision3D = move_and_collide(motion)
 	
 	if collision:
 		_handle_collision(collision);
 
+
 func _handle_collision(collision_info: KinematicCollision3D) -> void:
 	var body_hit = collision_info.get_collider()
 	
-	var collision_angle = collision_info.get_angle()
+	var impact_velocity: Vector3 = velocity.normalized()
+	var surface_normal: Vector3 = collision_info.get_normal()
 	
-	push_warning("Collision detected! Collided body: %s" % body_hit)
-	push_warning("Collision detected! Collision angle %s" % rad_to_deg(collision_angle))
+	var cos_angle = abs(impact_velocity.dot(surface_normal))
+	var angle_between_velocity_and_normal = acos(cos_angle)
+	var angle_deg = rad_to_deg(angle_between_velocity_and_normal)
 	
+	var angle_of_impact = 90.0 - angle_deg 
+	
+	push_warning("Collision detected! Collision angle %s" % angle_of_impact)
+	#queue_free()
