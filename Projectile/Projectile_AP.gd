@@ -1,10 +1,12 @@
 extends CharacterBody3D
 
-@export var MUZZLE_VELOCITY: float= 600.0;
+@export var MUZZLE_VELOCITY: float= 100.0;
 @export var MASS: float = 6.79;
-@export var DRAG_FACTOR: float = 0.05; # Note: DRAG_FACTOR replaces the complex (1/2 * rho * A * C_d) physics term
+@export var DRAG_FACTOR: float = 0.005; # Note: DRAG_FACTOR replaces the complex (1/2 * rho * A * C_d) physics term
 
 var initial_direction: Vector3 = Vector3.ZERO 
+
+@onready var thickness_raycast: RayCast3D = $RayCast3D
 
 func _ready() -> void:
 	if initial_direction != Vector3.ZERO:
@@ -22,6 +24,7 @@ func _physics_process(delta: float) -> void:
 		var drag_acceleration_magnitude = drag_force_magnitude / MASS
 		var drag_deceleration = velocity.normalized() * drag_acceleration_magnitude
 		velocity -= drag_deceleration * delta
+		push_warning("Current projectile velocity %s" % velocity)
 		 
 		look_at(global_position + velocity, Vector3.UP)
 	
@@ -45,5 +48,46 @@ func _handle_collision(collision_info: KinematicCollision3D) -> void:
 	
 	var angle_of_impact = 90.0 - angle_deg 
 	
-	push_warning("Collision detected! Collision angle %s" % angle_of_impact)
-	#queue_free()
+	_trigger_raycast_collision_check()
+	#push_warning("Collision detected! Collision angle %s" % angle_of_impact)
+	queue_free()
+
+func _trigger_raycast_collision_check() -> float:
+	var OFFSET_DISTANCE = 0.01
+	var RAY_LENGTH = 500.0
+
+	thickness_raycast.enabled = true
+	thickness_raycast.target_position = initial_direction.normalized() * RAY_LENGTH 
+	thickness_raycast.force_raycast_update()
+
+	if not thickness_raycast.is_colliding():
+		thickness_raycast.enabled = false
+		push_warning("Ray did not hit the mesh.")
+		return 0.0
+	
+	var entry_point: Vector3 = thickness_raycast.get_collision_point()
+	var entry_normal: Vector3 = thickness_raycast.get_collision_normal()
+	
+	var inward_direction: Vector3 = -entry_normal.normalized()
+	var ray_origin: Vector3 = entry_point + (inward_direction * OFFSET_DISTANCE)
+	
+	thickness_raycast.global_transform.origin = ray_origin
+	var global_end_point = ray_origin + inward_direction * RAY_LENGTH
+	thickness_raycast.target_position = thickness_raycast.to_local(global_end_point)
+	thickness_raycast.force_raycast_update()
+	
+	if not thickness_raycast.is_colliding():
+		thickness_raycast.enabled = false
+		push_warning("Ray entered mesh but did not find an exit point within bounds.")
+		return 0.0
+	
+	var exit_point: Vector3 = thickness_raycast.get_collision_point()
+	var thickness: float = entry_point.distance_to(exit_point)
+	
+	thickness_raycast.enabled = false
+	
+	print("Mesh Entry Point: ", entry_point)
+	print("Mesh Exit Point:  ", exit_point)
+	print("Calculated Thickness: ", thickness)
+	
+	return thickness
