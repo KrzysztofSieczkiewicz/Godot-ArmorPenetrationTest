@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://6k2srtfcdfa3"]
+[gd_scene load_steps=5 format=3 uid="uid://6k2srtfcdfa3"]
 
 [ext_resource type="Script" uid="uid://d4av7m1l5f7g6" path="res://Projectile/Projectile_AP.gd" id="1_0kxar"]
+[ext_resource type="Script" uid="uid://ttfkg5r8dpgd" path="res://Projectile/PenetrationRayCast.gd" id="2_gtrsm"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_1p38p"]
 radius = 0.038
@@ -24,3 +25,8 @@ shape = SubResource("CapsuleShape3D_1p38p")
 [node name="RayCast3D" type="RayCast3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, -0.165)
 enabled = false
+
+[node name="PenetrationRayCast" type="Node3D" parent="."]
+script = ExtResource("2_gtrsm")
+
+[node name="RayCast3D" type="RayCast3D" parent="PenetrationRayCast"]

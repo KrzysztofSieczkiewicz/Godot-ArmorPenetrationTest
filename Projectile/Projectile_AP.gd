@@ -24,7 +24,7 @@ func _physics_process(delta: float) -> void:
 		var drag_acceleration_magnitude = drag_force_magnitude / MASS
 		var drag_deceleration = velocity.normalized() * drag_acceleration_magnitude
 		velocity -= drag_deceleration * delta
-		push_warning("Current projectile velocity %s" % velocity)
+		#push_warning("Current projectile velocity %s" % velocity)
 		 
 		look_at(global_position + velocity, Vector3.UP)
 	
