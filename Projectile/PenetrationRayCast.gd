@@ -5,34 +5,49 @@ extends RayCast3D
 
 
 func measure_thickness(origin: Vector3, direction: Vector3) -> void:
-	_find_entry_point(origin, direction)
+	var target = direction.normalized() * RAY_LENGTH
+	var entry_point = _find_collision_point(origin, target)
+	push_error("Entry point: %s" % entry_point)
+	
+	var new_origin = _offset_origin(entry_point, direction)
+	var new_target = _get_opposite_target(entry_point, direction)
+	
+	var exit_point = _find_collision_point(new_origin, new_target)
+	
+	while exit_point == Vector3.ZERO:
+		new_origin = _offset_origin(new_origin, direction)
+		exit_point = _find_collision_point(new_origin, new_target)
+		push_warning("Trying further away")
+	
+	push_error("Exit point: %s" % exit_point)
+	
+	var measured_thickness = (exit_point - entry_point).length()
+	push_error("Thickness: %s" % measured_thickness)
 
 
-func _find_entry_point(origin: Vector3, direction: Vector3) -> void:
+func _offset_origin(origin: Vector3, direction: Vector3) -> Vector3:
+	var normalized: Vector3 = direction.normalized()
+	return origin + normalized * OFFSET_DISTANCE
+
+
+func _get_opposite_target(origin: Vector3, direction: Vector3) -> Vector3:
+	return origin + direction.normalized() * (-1) * RAY_LENGTH
+
+
+func _find_collision_point(origin: Vector3, target: Vector3) -> Vector3:
+	var collision_point: Vector3 = Vector3.ZERO;
+	
 	enabled = true
-	target_position = direction * RAY_LENGTH 
+	global_position = origin
+	target_position = to_local(target)
 	force_raycast_update()
 	
-	var entry_point: Vector3 = get_collision_point()
-	var contact_surface_normal: Vector3 = get_collision_normal()
+	if is_colliding():
+		collision_point = get_collision_point();
 	
-	var OFFSET: float = 50.0;
-	var collision_vector = direction
-	var new_position = entry_point + direction * OFFSET
-	var new_direction = collision_vector.normalized() * (-1) * OFFSET
-	var new_target_position = new_position + new_direction * RAY_LENGTH
-	
-	var contact_angle = _get_impact_angle(direction, contact_surface_normal)
-	
-	global_transform.origin = new_position
-	target_position = to_local(new_target_position)
+	enabled = false;
 	force_raycast_update()
-	
-	var exit_point: Vector3 = get_collision_point()
-	
-	var thickness = (exit_point - entry_point).length()
-	push_error("Thickness: %s" % thickness)
-
+	return collision_point;
 
 func _get_impact_angle(projectile_direction: Vector3, surface_normal: Vector3) -> float:
 	var cos_angle = abs(projectile_direction.dot(surface_normal))
