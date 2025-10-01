@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://6k2srtfcdfa3"]
 
 [ext_resource type="Script" uid="uid://d4av7m1l5f7g6" path="res://Projectile/Projectile_AP.gd" id="1_0kxar"]
-[ext_resource type="Script" uid="uid://ttfkg5r8dpgd" path="res://Projectile/PenetrationRayCast.gd" id="2_gtrsm"]
+[ext_resource type="Script" uid="uid://dtodv2tlqudg4" path="res://Projectile/ColliderProbe.gd" id="3_ks6dk"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_1p38p"]
 radius = 0.038
@@ -22,9 +22,6 @@ mesh = SubResource("CapsuleMesh_1p38p")
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
 shape = SubResource("CapsuleShape3D_1p38p")
 
-[node name="PenetrationRayCast3D" type="RayCast3D" parent="."]
-script = ExtResource("2_gtrsm")
-
-[node name="RayCast3D" type="RayCast3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, -0.165)
-enabled = false
+[node name="ColliderProbe" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.15787333)
+script = ExtResource("3_ks6dk")

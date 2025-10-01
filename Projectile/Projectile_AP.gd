@@ -6,8 +6,7 @@ extends CharacterBody3D
 
 var initial_direction: Vector3 = Vector3.ZERO 
 
-@onready var thickness_raycast: RayCast3D = $RayCast3D
-@onready var thickness_probe: RayCast3D = $PenetrationRayCast3D
+@onready var collider_probe: Node3D = $ColliderProbe
 
 func _ready() -> void:
 	if initial_direction != Vector3.ZERO:
@@ -38,9 +37,15 @@ func _physics_process(delta: float) -> void:
 
 
 func _handle_collision(collision_info: KinematicCollision3D) -> void:
+	var body_hit = collision_info.get_collider()
 	
 	var impact_point: Vector3 = collision_info.get_position()
 	var impact_velocity: Vector3 = velocity.normalized()
+	var surface_normal: Vector3 = collision_info.get_normal()
 	
-	thickness_probe.measure_thickness(impact_point, impact_velocity);
+	var cos_angle = abs(impact_velocity.dot(surface_normal))
+	var angle_between_velocity_and_normal = acos(cos_angle)
+	var angle_deg = rad_to_deg(angle_between_velocity_and_normal)
+	
+	collider_probe.probe_thickness(impact_velocity.normalized())
 	queue_free()
