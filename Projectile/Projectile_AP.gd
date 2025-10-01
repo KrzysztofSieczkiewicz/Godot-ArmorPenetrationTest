@@ -42,5 +42,5 @@ func _handle_collision(collision_info: KinematicCollision3D) -> void:
 	var impact_point: Vector3 = collision_info.get_position()
 	var impact_velocity: Vector3 = velocity.normalized()
 	
-	thickness_probe.measure_thickness(impact_point, impact_velocity);
+	thickness_probe.measure_thickness(impact_velocity);
 	queue_free()

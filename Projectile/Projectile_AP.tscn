@@ -23,6 +23,8 @@ transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0
 shape = SubResource("CapsuleShape3D_1p38p")
 
 [node name="PenetrationRayCast3D" type="RayCast3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.17045543)
+target_position = Vector3(0, 0, 0)
 script = ExtResource("2_gtrsm")
 
 [node name="RayCast3D" type="RayCast3D" parent="."]
