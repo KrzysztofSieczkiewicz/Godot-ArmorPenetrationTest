@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://6k2srtfcdfa3"]
 
 [ext_resource type="Script" uid="uid://d4av7m1l5f7g6" path="res://Projectile/Projectile_AP.gd" id="1_0kxar"]
-[ext_resource type="Script" uid="uid://dtodv2tlqudg4" path="res://Projectile/ColliderProbe.gd" id="3_ks6dk"]
+[ext_resource type="Script" path="res://Projectile/ColliderProbe.gd" id="3_ks6dk"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_1p38p"]
 radius = 0.038

@@ -1,6 +1,6 @@
 extends CharacterBody3D
 
-@export var MUZZLE_VELOCITY: float= 100.0;
+@export var MUZZLE_VELOCITY: float= 1000.0;
 @export var MASS: float = 6.79;
 @export var DRAG_FACTOR: float = 0.005; # Note: DRAG_FACTOR replaces the complex (1/2 * rho * A * C_d) physics term
 
