@@ -30,7 +30,7 @@ camera_attributes = SubResource("CameraAttributesPractical_r0du0")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 8)
 
 [node name="Armor" parent="." instance=ExtResource("2_uu6xs")]
-transform = Transform3D(0.9999999, 0, -2.9802322e-08, 0, 0.9999999, 0, -2.9802322e-08, 0, 0.9999999, 0, 2.9721012, -10)
+transform = Transform3D(0.25881904, 0, -0.9659257, 0, 0.99999976, 0, 0.9659257, 0, 0.25881904, 0, 2.9721012, -10)
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(-4.222196e-08, -0.25881907, 0.9659258, -1.131334e-08, 0.9659259, 0.25881907, -1, 8.881784e-16, -4.371139e-08, 7.065508, 6, -3.3647938)

@@ -4,9 +4,14 @@ extends CharacterBody3D
 @export var MASS: float = 6.79;
 @export var DRAG_FACTOR: float = 0.005; # Note: DRAG_FACTOR replaces the complex (1/2 * rho * A * C_d) physics term
 
+@export var MIN_RICOCHET_RAD: float = 1.2217 # 75deg
+@export var MAX_RICOCHET_RAD: float = 0.7854 # 45deg
+
 var initial_direction: Vector3 = Vector3.ZERO 
 
+# TODO: move these into classes later on, no need for unnecessary nodes
 @onready var collider_probe: Node3D = $ColliderProbe
+@onready var ricochet_calculator: Node3D = $RicochetCalculator
 
 func _ready() -> void:
 	if initial_direction != Vector3.ZERO:
@@ -37,15 +42,28 @@ func _physics_process(delta: float) -> void:
 
 
 func _handle_collision(collision_info: KinematicCollision3D) -> void:
-	var body_hit = collision_info.get_collider()
-	
-	var impact_point: Vector3 = collision_info.get_position()
-	var impact_velocity: Vector3 = velocity.normalized()
+	var impact_velocity_norm: Vector3 = velocity.normalized()
 	var surface_normal: Vector3 = collision_info.get_normal()
+	push_error("normalized velocity vector: %s" % impact_velocity_norm)
+	push_error("surface normal vector: %s" % surface_normal)
 	
-	var cos_angle = abs(impact_velocity.dot(surface_normal))
-	var angle_between_velocity_and_normal = acos(cos_angle)
-	var angle_deg = rad_to_deg(angle_between_velocity_and_normal)
+	var impact_angle_radians = _measure_collision_radian(impact_velocity_norm, surface_normal)
 	
-	collider_probe.probe_thickness(impact_velocity.normalized())
+	push_warning("IMPACT ANGLE: %s" % impact_angle_radians)
+	if impact_angle_radians > MIN_RICOCHET_RAD:
+		push_warning("SHELL RICOCHETS")
+		ricochet_calculator.get_reflection_velocity(velocity, surface_normal)
+	elif impact_angle_radians >= MAX_RICOCHET_RAD and impact_angle_radians < MIN_RICOCHET_RAD:
+		push_warning("SHELL HAS A CHANCE TO RICOCHET")
+	else:
+		push_warning("SHELL HITS")
+	
+	collider_probe.probe_thickness(impact_velocity_norm)
 	queue_free()
+
+
+func _measure_collision_radian(impact_velocity: Vector3, surface_normal: Vector3) -> float:
+	var cos_angle = abs(impact_velocity.dot(surface_normal))
+	var impact_angle_radians = acos(cos_angle)
+	
+	return impact_angle_radians

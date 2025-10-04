@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://6k2srtfcdfa3"]
+[gd_scene load_steps=6 format=3 uid="uid://6k2srtfcdfa3"]
 
 [ext_resource type="Script" uid="uid://d4av7m1l5f7g6" path="res://Projectile/Projectile_AP.gd" id="1_0kxar"]
-[ext_resource type="Script" path="res://Projectile/ColliderProbe.gd" id="3_ks6dk"]
+[ext_resource type="Script" uid="uid://bfkbjf7k1phiy" path="res://Projectile/RicochetCalculator.gd" id="3_cpls1"]
+[ext_resource type="Script" uid="uid://dtodv2tlqudg4" path="res://Projectile/ColliderProbe.gd" id="3_ks6dk"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_1p38p"]
 radius = 0.038
@@ -25,3 +26,6 @@ shape = SubResource("CapsuleShape3D_1p38p")
 [node name="ColliderProbe" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.15787333)
 script = ExtResource("3_ks6dk")
+
+[node name="RicochetCalculator" type="Node3D" parent="."]
+script = ExtResource("3_cpls1")
