@@ -1,4 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://jupn6afamq04"]
+[gd_scene load_steps=7 format=3 uid="uid://jupn6afamq04"]
+
+[ext_resource type="Script" uid="uid://8ad0nynl3au7" path="res://Armor/Armor.gd" id="1_8nmin"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_6nrul"]
 size = Vector3(5, 5, 0.15)
@@ -6,11 +8,81 @@ size = Vector3(5, 5, 0.15)
 [sub_resource type="BoxMesh" id="BoxMesh_8nmin"]
 size = Vector3(5, 5, 0.15)
 
+[sub_resource type="Animation" id="Animation_8nmin"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CollisionShape3D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, -10)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("MeshInstance3D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, -10)]
+}
+
+[sub_resource type="Animation" id="Animation_6nrul"]
+resource_name = "move_front_and_back"
+length = 3.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CollisionShape3D:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.5, 3),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 0, -10), Vector3(0, 0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("MeshInstance3D:position")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1.5, 3),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 0, -10), Vector3(0, 0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_2x356"]
+_data = {
+&"RESET": SubResource("Animation_8nmin"),
+&"move_front_and_back": SubResource("Animation_6nrul")
+}
+
 [node name="Armor" type="RigidBody3D"]
 gravity_scale = 0.0
+script = ExtResource("1_8nmin")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -10)
 shape = SubResource("BoxShape3D_6nrul")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -10)
 mesh = SubResource("BoxMesh_8nmin")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_2x356")
+}
