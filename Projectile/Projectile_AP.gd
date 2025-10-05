@@ -1,6 +1,6 @@
 extends CharacterBody3D
 
-@export var MUZZLE_VELOCITY: float= 1000.0;
+@export var MUZZLE_VELOCITY: float= 50.0;
 @export var MASS: float = 6.79;
 @export var DRAG_FACTOR: float = 0.005; # Note: DRAG_FACTOR replaces the complex (1/2 * rho * A * C_d) physics term
 
@@ -44,22 +44,29 @@ func _physics_process(delta: float) -> void:
 func _handle_collision(collision_info: KinematicCollision3D) -> void:
 	var impact_velocity_norm: Vector3 = velocity.normalized()
 	var surface_normal: Vector3 = collision_info.get_normal()
-	push_error("normalized velocity vector: %s" % impact_velocity_norm)
-	push_error("surface normal vector: %s" % surface_normal)
+	#push_error("normalized velocity vector: %s" % impact_velocity_norm)
+	#push_error("surface normal vector: %s" % surface_normal)
 	
 	var impact_angle_radians = _measure_collision_radian(impact_velocity_norm, surface_normal)
 	
 	push_warning("IMPACT ANGLE: %s" % impact_angle_radians)
 	if impact_angle_radians > MIN_RICOCHET_RAD:
 		push_warning("SHELL RICOCHETS")
-		ricochet_calculator.get_reflection_velocity(velocity, surface_normal)
+		velocity = ricochet_calculator.get_reflection_velocity(velocity, surface_normal)
+		
 	elif impact_angle_radians >= MAX_RICOCHET_RAD and impact_angle_radians < MIN_RICOCHET_RAD:
 		push_warning("SHELL HAS A CHANCE TO RICOCHET")
+		if ricochet_calculator.randomize_ricochet(MIN_RICOCHET_RAD, MAX_RICOCHET_RAD, impact_angle_radians):
+			velocity = ricochet_calculator.get_reflection_velocity(velocity, surface_normal)
+			push_warning("GOOD LUCK - SHELL RICOCHETED")
+		else:
+			push_warning("POOR LUCK - SHELL HIT")
+			collider_probe.probe_thickness(impact_velocity_norm)
+			queue_free()
 	else:
 		push_warning("SHELL HITS")
-	
-	collider_probe.probe_thickness(impact_velocity_norm)
-	queue_free()
+		collider_probe.probe_thickness(impact_velocity_norm)
+		queue_free()
 
 
 func _measure_collision_radian(impact_velocity: Vector3, surface_normal: Vector3) -> float:

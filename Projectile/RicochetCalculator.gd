@@ -22,3 +22,9 @@ func get_reflection_velocity(impact_velocity: Vector3, surface_normal: Vector3) 
 	
 	var reflected_velocity_vector: Vector3 = impact_velocity - (2 * armor_hardness_coefficient * vector_projection)
 	return reflected_velocity_vector
+
+func randomize_ricochet(min_chance_radians: float, max_chance_radians: float, impact_radians: float) -> bool:
+	var probability_on_impact: float = (impact_radians - min_chance_radians) / (max_chance_radians - min_chance_radians)
+	var randomized_chance: float = randf()
+	
+	return probability_on_impact > randomized_chance
