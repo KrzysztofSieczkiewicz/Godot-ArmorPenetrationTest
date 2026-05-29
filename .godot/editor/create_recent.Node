@@ -1,5 +1,5 @@
-AnimationPlayer
 Node3D
+AnimationPlayer
 RayCast3D
 CharacterBody3D
 WorldEnvironment

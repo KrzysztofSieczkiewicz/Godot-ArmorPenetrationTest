@@ -1,8 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://6k2srtfcdfa3"]
+[gd_scene format=3 uid="uid://b5a5p8cnse65p"]
 
-[ext_resource type="Script" uid="uid://d4av7m1l5f7g6" path="res://Projectile/Projectile_AP.gd" id="1_0kxar"]
-[ext_resource type="Script" uid="uid://bfkbjf7k1phiy" path="res://Projectile/RicochetCalculator.gd" id="3_cpls1"]
-[ext_resource type="Script" uid="uid://dtodv2tlqudg4" path="res://Projectile/ColliderProbe.gd" id="3_ks6dk"]
+[ext_resource type="Script" uid="uid://d4av7m1l5f7g6" path="res://Projectile/Projectile_AP.gd" id="1_et13h"]
+[ext_resource type="Script" uid="uid://dtodv2tlqudg4" path="res://Projectile/ColliderProbe.gd" id="2_qxgwr"]
+[ext_resource type="Script" uid="uid://bfkbjf7k1phiy" path="res://Projectile/RicochetCalculator.gd" id="3_v0pq2"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_1p38p"]
 radius = 0.038
@@ -13,7 +13,7 @@ radius = 0.038
 height = 0.33
 
 [node name="Projectile" type="CharacterBody3D"]
-script = ExtResource("1_0kxar")
+script = ExtResource("1_et13h")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
@@ -25,7 +25,7 @@ shape = SubResource("CapsuleShape3D_1p38p")
 
 [node name="ColliderProbe" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.15787333)
-script = ExtResource("3_ks6dk")
+script = ExtResource("2_qxgwr")
 
 [node name="RicochetCalculator" type="Node3D" parent="."]
-script = ExtResource("3_cpls1")
+script = ExtResource("3_v0pq2")

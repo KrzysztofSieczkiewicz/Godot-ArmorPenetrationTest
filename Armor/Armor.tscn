@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://jupn6afamq04"]
+[gd_scene format=3 uid="uid://jupn6afamq04"]
 
 [ext_resource type="Script" uid="uid://8ad0nynl3au7" path="res://Armor/Armor.gd" id="1_8nmin"]
 
@@ -70,19 +70,19 @@ _data = {
 &"move_front_and_back": SubResource("Animation_6nrul")
 }
 
-[node name="Armor" type="RigidBody3D"]
+[node name="Armor" type="RigidBody3D" unique_id=1690485744]
+collision_layer = 7
+collision_mask = 7
 gravity_scale = 0.0
 script = ExtResource("1_8nmin")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1042583464]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -10)
 shape = SubResource("BoxShape3D_6nrul")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1595996267]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -10)
 mesh = SubResource("BoxMesh_8nmin")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-&"": SubResource("AnimationLibrary_2x356")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1603099960]
+libraries/ = SubResource("AnimationLibrary_2x356")
