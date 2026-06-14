@@ -2,39 +2,25 @@ class_name ShellAP
 extends Node3D
 
 """
-Bullet behavior:
-	1. Ghost mode
-		Each framde:
-		1a. Cast sphere forward and detect collisions
-		1b. When no collisions, move shell to the new position
-		1c. When collision detected, change to ballistic resolver mode
-	2. Resolution mode:
-		2a. Get collision data (point, velocity, normal and the rest)
-		2b. Calculate collision
-		2c. If ricochet - check path for another collision within next frame
-		2d. If no collision - return to Ghost mode
-		or
-		2e. If collision - return to step 2a.
-"""
+1st Phase - Movement:
+	1. Cast sphere forward and detect collisions
+	2. When no collisions, move shell to the new position
+	3. When collision detected, get impact details and move to phase 2
 
-"""
-Collision calculation:
-	1. Determine overmatch
-	2. Determine shatter
-		2a. Determine spall and energy
-		2b. Determine depth (to determine armor weakening)
-	3. Determine ricochet
-		3a. Determine Slip Distance
-		3b.??? Determine Slip depth
-		3c. Determine Gyroscopic Precession -> this might need to be moved into penetrarest_infotion as well, but may be an overcomplication - reconsider
-		3d. Determine projectile integrity
-			3dI. Determine spall and energy
-			or
-			3dII. Determine shell energy loss (consider setting it to 'tumble')
-	4. Determine penetration
-		4a. Determine Normalization/Denormalization
-		4b. Determine Energy and Projectile Spall
-		4c. Determine Further
+2nd Phase - Collision
+	1. If overmatches -> go into phase 3
+	2. If ricochets -> calculate next collison or return to phase 1
+		2a. Determine Slip Distance (consider if depth as well)
+		2b. Determine Gyroscopic Precession -> this might need to be moved into penetration_info as well, but may be an overcomplication - reconsider
+		2d. Determine projectile integrity (shell energy loss (consider setting shell to 'tumble') and potential spall)
+	3. If shatters -> go into phase 4 (TBD)
+	
+3rd Phase - ballistics
+	1. If penetrates
+		1a. Determine normalization/denormalization
+		1b. Determine remaining energy and projectile spall
+		1c. Determine further collisions
+	2. If not - calculate missing energy for penetration (TBD)
 """
 
 """
@@ -100,7 +86,7 @@ func _physics_process(delta: float) -> void:
 	if hit_detected.is_empty():
 		global_position = end_pos
 	else:
-		_run_resolution_mode(start_pos, travel_vector, delta, hit_detected)
+		_run_collision_mode(start_pos, travel_vector, delta, hit_detected)
 		pass
 
 
@@ -150,7 +136,7 @@ func _run_ghost_mode(start: Vector3, motion: Vector3) -> Dictionary:								# TO
 	return {}
 
 
-func _run_resolution_mode(start: Vector3, motion: Vector3, frame_delta: float, hit_data: Dictionary) -> void:
+func _run_collision_mode(start: Vector3, motion: Vector3, frame_delta: float, hit_data: Dictionary) -> void:
 	var packet = ResolutionPacket.new()
 	packet.impact_point = hit_data.get("point", global_position)
 	packet.impact_normal = hit_data.get("normal", Vector3.UP)
@@ -177,12 +163,11 @@ func _process_balistic_resolver(packet: ResolutionPacket, remaining_delta: float
 	var cos_angle = impact_dir.dot(-packet.impact_normal)
 	var impact_angle = acos(clamp(cos_angle, -1.0, 1.0))
 	
-	var effective_angle = max(0.0, impact_angle - normalization_factor)
-	
-	if effective_angle > ricochet_angle_threshold_rad:
-		_handle_ricochet(packet, effective_angle)
+	if impact_angle > ricochet_angle_threshold_rad:
+		_handle_ricochet(packet, impact_angle)
 	else:
-		_handle_penetration(packet, effective_angle)
+		var armor_thickness = 6.0 ### TODO: read it from somewhere later
+		_handle_penetration(packet, impact_angle, armor_thickness)
 
 
 
@@ -213,8 +198,27 @@ func _calc_gyroscopic_precession(angle: float) -> float:
 	
 	return precession_angle
 
+func _handle_overmatch(packet: ResolutionPacket, impact_angle: float, armor_thickness: float):
+	var td_ratio = armor_thickness / (2 * shell_radius)
+	var is_overmatch = td_ratio < 0.5 and impact_angle > deg_to_rad(45.0)
+	
+	if is_overmatch:
+		var thinness_modifier = 1.0 - (td_ratio / 0.5)
+		var exit_denormalization = deg_to_rad(8.0) * thinness_modifier
+		
+		var exit_angle = impact_angle + exit_denormalization
+		exit_angle = min(exit_angle, PI / 2.0 - 0.05) 			# TODO: check if needs capping
+		var residual_velocity = packet.projectile_velocity * (1.0 - (0.15 * thinness_modifier))
+		### TODO: ensure that this won't deflect the shell outside of the plate (also that it will be sufficiently low angle)
 
 
-func _handle_penetration(packet: ResolutionPacket, angle: float):
+func _handle_penetration(packet: ResolutionPacket, impact_angle: float, armor_thickness: float):
 	push_warning("Penetration")
+	
+	# Calc normalization
+	var effective_angle = max(0.0, impact_angle - normalization_factor)
+	
+	### rest of the pen handling
+	
+	
 	pass
