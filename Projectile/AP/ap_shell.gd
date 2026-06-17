@@ -44,7 +44,6 @@ create external manager class that will determine both armor and shell behaviour
 
 @onready var ricochet_angle_threshold_rad: float = deg_to_rad(ricochet_threshold_angle)
 
-
 var current_velocity: Vector3
 var space_state: PhysicsDirectSpaceState3D
 var sweep_shape: SphereShape3D
@@ -151,23 +150,30 @@ func _run_collision_mode(start: Vector3, motion: Vector3, frame_delta: float, hi
 	
 	packet.relative_velocity = packet.projectile_velocity - packet.target_velocity
 	
+	var collision_armor_uv = _get_collision_uv(packet.impact_point, packet.impact_normal)
+	var armor_structural_thickness = packet.target_collider.get_armor_thickness(collision_armor_uv)					# TODO: this might be unsafe - find a clear way of ensuring that collider has "armor thickness" - note: this might be much easier after moving most of collision into management class instead
+	
 	var distance_to_impact = start.distance_to(packet.impact_point)
 	var time_to_impact = distance_to_impact / current_velocity.length()
 	var remaining_delta = frame_delta - time_to_impact
 	
-	_process_balistic_resolver(packet, remaining_delta)
+	_process_balistic_resolver(packet, remaining_delta, armor_structural_thickness)
 
 
-func _process_balistic_resolver(packet: ResolutionPacket, remaining_delta: float) -> void:
+func _process_balistic_resolver(packet: ResolutionPacket, remaining_delta: float, armor_thickness: float) -> void:
 	var impact_dir = packet.relative_velocity.normalized()
 	var cos_angle = impact_dir.dot(-packet.impact_normal)
 	var impact_angle = acos(clamp(cos_angle, -1.0, 1.0))
 	
-	if impact_angle > ricochet_angle_threshold_rad:
+	var td_ratio = armor_thickness / (2 * shell_radius)
+	var is_overmatch = td_ratio < 0.5 and impact_angle > deg_to_rad(45.0)
+	
+	if is_overmatch:
+		_handle_overmatch(packet, impact_angle, armor_thickness, td_ratio)
+	elif impact_angle > ricochet_angle_threshold_rad:
 		_handle_ricochet(packet, impact_angle)
 	else:
-		var armor_thickness = 6.0 ### TODO: read it from somewhere later
-		_handle_penetration(packet, impact_angle, armor_thickness)
+		_handle_penetration(packet, impact_angle)
 
 
 
@@ -198,27 +204,36 @@ func _calc_gyroscopic_precession(angle: float) -> float:
 	
 	return precession_angle
 
-func _handle_overmatch(packet: ResolutionPacket, impact_angle: float, armor_thickness: float):
-	var td_ratio = armor_thickness / (2 * shell_radius)
-	var is_overmatch = td_ratio < 0.5 and impact_angle > deg_to_rad(45.0)
+func _handle_overmatch(packet: ResolutionPacket, impact_angle: float, armor_thickness: float, td_ratio: float):
+	var thickness_modifier = 1.0 - (td_ratio / 0.5)
+	var exit_denormalization = deg_to_rad(8.0) * thickness_modifier
 	
-	if is_overmatch:
-		var thinness_modifier = 1.0 - (td_ratio / 0.5)
-		var exit_denormalization = deg_to_rad(8.0) * thinness_modifier
-		
-		var exit_angle = impact_angle + exit_denormalization
-		exit_angle = min(exit_angle, PI / 2.0 - 0.05) 			# TODO: check if needs capping
-		var residual_velocity = packet.projectile_velocity * (1.0 - (0.15 * thinness_modifier))
-		### TODO: ensure that this won't deflect the shell outside of the plate (also that it will be sufficiently low angle)
+	var exit_angle = impact_angle + exit_denormalization
+	exit_angle = min(exit_angle, PI / 2.0 - 0.05) 																		# TODO: check if needs capping
+	var residual_velocity = packet.projectile_velocity * (1.0 - (0.15 * thickness_modifier)) 							# TODO: ensure that this won't deflect the shell back into the plate (also that it will be sufficiently low angle)
 
 
-func _handle_penetration(packet: ResolutionPacket, impact_angle: float, armor_thickness: float):
+func _handle_penetration(packet: ResolutionPacket, impact_angle: float):												# TODO: don't use baked armor thickness, use probing instead
 	push_warning("Penetration")
 	
-	# Calc normalization
-	var effective_angle = max(0.0, impact_angle - normalization_factor)
+	var effective_angle = max(0.0, impact_angle - normalization_factor) # normalization
 	
-	### rest of the pen handling
-	
+	var impact_vector: Vector2 = Vector2.ZERO
+	collider_probe.probe_thickness(impact_vector)
 	
 	pass
+
+
+func _get_collision_uv(impact_point: Vector2, impact_normal: Vector2) -> Vector2:
+	var ray_start = impact_point + (impact_normal * 0.01)
+	var ray_end = impact_point - (impact_point * 0.03)
+	
+	var collision_masks = MASK_STATIC | MASK_DYNAMIC | MASK_PROJECTILE 											# TODO: move higher up or get by parameter
+	var uv_query = PhysicsRayQueryParameters3D.create(ray_start, ray_end, collision_masks)
+	uv_query.collide_with_bodies = true
+	uv_query.collide_with_areas = true  																		# TODO: might not be necessary
+	
+	var uv_result = space_state.intersect_ray(uv_query)
+	var collision_uv_coord = uv_result.get("uv")
+	
+	return collision_uv_coord
