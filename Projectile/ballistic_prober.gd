@@ -53,23 +53,20 @@ static func _find_exit_point(
 	var end_point_exit = entry_point - normalized_direction * RAY_LENGTH
 	
 	while(true):
-		# Create and execute the raycast query
 		var query_exit = PhysicsRayQueryParameters3D.create(start_point_exit, end_point_exit)
 		query_exit.exclude = exclusion_list
 		var result = space_state.intersect_ray(query_exit)
 		
-		if result.size() > 0:
-			# Check if detected collision was the one expected
+		if result.size() > 0: # Check if detected collision was the one expected
 			var exit_collider: CollisionObject3D = result.collider
 			if exit_collider == target_collider:
-				return [result.position]
-			# Exclude unwanted collider and shoot again
-			else:
+				return [result.position] 
+			else: # Exclude unwanted collider and check again
 				var unwanted_rid: RID = exit_collider.get_rid()
 				exclusion_list.append(unwanted_rid)
 				
-		# If no detection found in this sweep, move the ray origin/target.
-		else:
+		
+		else: # If no detection found in this sweep, move the ray origin-target further
 			var max_search_offset = RAY_LENGTH * 5
 			var current_offset = (start_point_exit - (entry_point + normalized_direction * RAY_ORIGIN_OFFSET)).length()
 			if current_offset > max_search_offset:
