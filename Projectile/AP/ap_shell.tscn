@@ -8,14 +8,6 @@ height = 0.33
 
 [node name="APShell" type="Node3D" unique_id=2071045347]
 script = ExtResource("1_5hvi4")
-muzzle_velocity = null
-mass = null
-shell_radius = null
-ricochet_critical_zone_angle = null
-ricochet_threshold_angle = null
-normalization_factor = null
-gyro_progr_angle_min = null
-gyro_progr_angle_max = null
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1251043358]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)

@@ -90,7 +90,7 @@ func _physics_process(delta: float) -> void:
 
 
 
-func _run_ghost_mode(start: Vector3, motion: Vector3) -> Dictionary:								# TODO: this will require some cleanup later
+func _run_ghost_mode(start: Vector3, motion: Vector3) -> Dictionary:								# TODO: replace shape sweep with Ray Bundle -> only perform shape sweep if armor collision is detected
 	print("\n=================== [PHASE 1: GHOST MODE] ===================")
 	print("Shell Position : ", start)
 	print("Travel Vector  : ", motion, " (Distance this frame: ", motion.length(), "m)")
@@ -117,20 +117,20 @@ func _run_ghost_mode(start: Vector3, motion: Vector3) -> Dictionary:								# TO
 		query.transform.origin = start + (motion * unsafe_fraction)
 		query.motion = Vector3.ZERO
 		
-		var rest_info = space_state.get_rest_info(query)
+		var collision_points = space_state.collide_shape(query, 1)
 		
-		if not rest_info.is_empty():
-			var collider_id = rest_info.get("collider_id")
-			var struck_object = instance_from_id(collider_id)
-			print("Real Node Name: ", struck_object.name if struck_object else "Unknown Object")
+		if not collision_points.is_empty(): # collide_shape returns an array of vector pairs [point_on_surface, point_on_primitive]
+			var local_impact_point = collision_points[0]
 			
-			print("↳ [COLLISION DATA SUCCESS]")
-			print("   - Struck Object : ", rest_info.get("collider"), " (ID: ", rest_info.get("collider_id"), ")")
-			print("   - Exact Point   : ", rest_info.get("point"))
-			print("   - Surface Normal: ", rest_info.get("normal"))
-			print("   - Face Linear V : ", rest_info.get("linear_velocity"))
-		
-		return rest_info
+			var ray_start = local_impact_point + (motion.normalized() * -0.05)
+			var ray_end = local_impact_point + (motion.normalized() * 0.05)
+			var ray_query = PhysicsRayQueryParameters3D.create(ray_start, ray_end, query.collision_mask)
+			
+			var ray_result = space_state.intersect_ray(ray_query)
+			if not ray_result.is_empty():
+				print("↳ [COLLISION DATA SUCCESS]")
+				print("   - Struck Object : ", ray_result.get("collider"))
+				return ray_result
 		
 	return {}
 
@@ -151,12 +151,14 @@ func _run_collision_mode(start: Vector3, motion: Vector3, frame_delta: float, hi
 	packet.relative_velocity = packet.projectile_velocity - packet.target_velocity
 	
 	var collision_armor_uv = _get_collision_uv(packet.impact_point, packet.impact_normal)
+	push_warning(packet.target_collider)
 	var armor_structural_thickness = packet.target_collider.get_armor_thickness(collision_armor_uv)					# TODO: this might be unsafe - find a clear way of ensuring that collider has "armor thickness" - note: this might be much easier after moving most of collision into management class instead
 	
 	var distance_to_impact = start.distance_to(packet.impact_point)
 	var time_to_impact = distance_to_impact / current_velocity.length()
 	var remaining_delta = frame_delta - time_to_impact
 	
+	# Assuming that we're hitting an armor and not e.g. brick wall 													# TODO: add a condition to skip calculations if non-armor is hit
 	_process_balistic_resolver(packet, remaining_delta, armor_structural_thickness)
 
 
@@ -197,12 +199,14 @@ func _calc_slip_distance(angle: float) -> float:
 	var slip_distance = ogive_radius / tan(angle) * scaling_coeff
 	return slip_distance
 
+
 func _calc_gyroscopic_precession(angle: float) -> float:
 	var angle_coeff = (ricochet_critical_zone_angle - angle) / (ricochet_threshold_angle - ricochet_critical_zone_angle)
 	var capped_max_angle = gyro_progr_angle_max - gyro_progr_angle_min
 	var precession_angle = gyro_progr_angle_min + (capped_max_angle * angle_coeff)
 	
 	return precession_angle
+
 
 func _handle_overmatch(packet: ResolutionPacket, impact_angle: float, armor_thickness: float, td_ratio: float):
 	var thickness_modifier = 1.0 - (td_ratio / 0.5)
@@ -213,20 +217,21 @@ func _handle_overmatch(packet: ResolutionPacket, impact_angle: float, armor_thic
 	var residual_velocity = packet.projectile_velocity * (1.0 - (0.15 * thickness_modifier)) 							# TODO: ensure that this won't deflect the shell back into the plate (also that it will be sufficiently low angle)
 
 
-func _handle_penetration(packet: ResolutionPacket, impact_angle: float):												# TODO: don't use baked armor thickness, use probing instead
+func _handle_penetration(packet: ResolutionPacket, impact_angle: float):
 	push_warning("Penetration")
 	
 	var effective_angle = max(0.0, impact_angle - normalization_factor) # normalization
 	
-	var impact_vector: Vector2 = Vector2.ZERO
-	collider_probe.probe_thickness(impact_vector)
+	var impact_vector_norm: Vector3 = Vector3.ZERO.normalized()
+	var armor_thickness = BallisticProber.probe_thickness(space_state, packet.impact_point, impact_vector_norm)
 	
+	push_warning("Probed thickness: ", armor_thickness)
 	pass
 
 
-func _get_collision_uv(impact_point: Vector2, impact_normal: Vector2) -> Vector2:
+func _get_collision_uv(impact_point: Vector3, impact_normal: Vector3) -> Vector2:
 	var ray_start = impact_point + (impact_normal * 0.01)
-	var ray_end = impact_point - (impact_point * 0.03)
+	var ray_end = impact_point - (impact_normal * 0.03)
 	
 	var collision_masks = MASK_STATIC | MASK_DYNAMIC | MASK_PROJECTILE 											# TODO: move higher up or get by parameter
 	var uv_query = PhysicsRayQueryParameters3D.create(ray_start, ray_end, collision_masks)
@@ -234,6 +239,12 @@ func _get_collision_uv(impact_point: Vector2, impact_normal: Vector2) -> Vector2
 	uv_query.collide_with_areas = true  																		# TODO: might not be necessary
 	
 	var uv_result = space_state.intersect_ray(uv_query)
-	var collision_uv_coord = uv_result.get("uv")
-	
-	return collision_uv_coord
+	if uv_result.size() == 0:
+		push_error("No collision found for UV query.")
+		return Vector2.ZERO
+		
+	if "uv" in uv_result:
+		return uv_result["uv"] as Vector2
+		
+	push_error("Collision occurred, but no UV coordinates were returned. Check collision shape type.")
+	return Vector2.ZERO
