@@ -1,11 +1,11 @@
 78098b89c88a74ebe8c20117b8754620
-::res://::1781873917
+::res://::1781879793
 icon.svg::CompressedTexture2D::2189156700988013759::1759075477::1781685300::1::::<><><>0<>0<>97c3528e783fd79949e370f55f3e1348<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
 Main.tscn::PackedScene::3163037068966301021::1780058504::0::1::::<><><>0<>0<><>::uid://bhg2wj0ealksq::::res://Cannon/Cannon.tscn<>uid://jupn6afamq04::::res://Armor/Armor.tscn
-::res://Armor/::1781697826
+::res://Armor/::1781876393
 armor.gd::GDScript::6142387976008389718::1781693766::0::1::::<>RigidBody3D<><>0<>0<><>::
 Armor.gd::GDScript::2316459356366309752::1759664741::0::1::::<>RigidBody3D<><>0<>0<><>::
-Armor.tscn::PackedScene::673922746487270191::1781697826::0::1::::<><><>0<>0<><>::uid://8ad0nynl3au7::::res://Armor/Armor.gd
+Armor.tscn::PackedScene::673922746487270191::1781876393::0::1::::<><><>0<>0<><>::uid://ctroh53f6v42u::::res://Armor/armor.gd
 ::res://Cannon/::1780058361
 Cannon.gd::GDScript::7861075520637122162::1780058361::0::1::::<>Node<><>0<>0<><>::
 Cannon.tscn::PackedScene::2891808013466736564::1759075477::0::1::::<><><>0<>0<><>::uid://dj871axv2tx03::::res://Cannon/Cannon.gd
@@ -15,6 +15,6 @@ ColliderProbe.gd::GDScript::8521972469412756149::1781699307::0::1::::<>Node3D<><
 Projectile_AP.gd::GDScript::9196071389820524755::1759658530::0::1::::<>CharacterBody3D<><>0<>0<><>::
 Projectile_AP.tscn::PackedScene::4493936026500712167::1780047367::0::1::::<><><>0<>0<><>::uid://d4av7m1l5f7g6::::res://Projectile/Projectile_AP.gd<>uid://dtodv2tlqudg4::::res://Projectile/ColliderProbe.gd<>uid://bfkbjf7k1phiy::::res://Projectile/RicochetCalculator.gd
 RicochetCalculator.gd::GDScript::2758085781101960220::1759658118::0::1::::<>Node<><>0<>0<><>::
-::res://Projectile/AP/::1781699867
-ap_shell.gd::GDScript::3899126048846154225::1781699339::0::1::::ShellAP<>Node3D<><>0<>0<><>::
-ap_shell.tscn::PackedScene::2198170355892794184::1781699867::0::1::::<><><>0<>0<><>::uid://bvs1bia5tfluf::::res://Projectile/AP/ap_shell.gd
+::res://Projectile/AP/::1781876393
+ap_shell.gd::GDScript::3899126048846154225::1781876393::0::1::::ShellAP<>Node3D<><>0<>0<><>::
+ap_shell.tscn::PackedScene::2198170355892794184::1781875413::0::1::::<><><>0<>0<><>::uid://bvs1bia5tfluf::::res://Projectile/AP/ap_shell.gd
