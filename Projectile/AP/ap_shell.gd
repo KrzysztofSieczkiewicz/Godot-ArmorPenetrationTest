@@ -10,17 +10,18 @@ extends Node3D
 2nd Phase - Collision
 	1. If overmatches -> go into phase 3
 	2. If ricochets -> calculate next collison or return to phase 1
-		2a. Determine Slip Distance (consider if depth as well)
+		2a. Determine Slip Distance (consider if depth matters as well)
 		2b. Determine Gyroscopic Precession -> this might need to be moved into penetration_info as well, but may be an overcomplication - reconsider
-		2d. Determine projectile integrity (shell energy loss (consider setting shell to 'tumble') and potential spall)
-	3. If shatters -> go into phase 4 (TBD)
+		2c. Determine projectile integrity (shell energy loss (consider setting shell to 'tumble') and potential spall)
 	
 3rd Phase - ballistics
 	1. If penetrates
-		1a. Determine normalization/denormalization
-		1b. Determine remaining energy and projectile spall
-		1c. Determine further collisions
-	2. If not - calculate missing energy for penetration (TBD)
+		1a. Determine normalization and denormalization
+		1b. If normalization or denormalization angle too high - trigger shatter at appropriate stage
+		1c. Determine remaining energy and projectile spall
+		1d. Determine further collisions
+		1e. Return the armor weakening
+	2. If not - calculate missing energy for penetration (TBD) and return the armor weakening
 """
 
 """
