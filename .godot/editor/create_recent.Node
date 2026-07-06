@@ -1,3 +1,6 @@
+CollisionShape3D
+Area3D
+MeshInstance3D
 Node3D
 AnimationPlayer
 RayCast3D
@@ -7,8 +10,5 @@ OmniLight3D
 Camera3D
 CSGBox3D
 StaticBody3D
-MeshInstance3D
-CollisionShape3D
 RigidBody3D
-Area3D
 CSGMesh3D

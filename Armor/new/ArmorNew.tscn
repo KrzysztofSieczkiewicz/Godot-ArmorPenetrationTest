@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://cf64pas66of7h"]
+
+[ext_resource type="Script" uid="uid://1xhvm1oaqqm2" path="res://Armor/new/armor.gd" id="1_uk03d"]
+
+[node name="ArmorNew" type="Node3D" unique_id=630271777]
+script = ExtResource("1_uk03d")
+
+[node name="Area3D" type="Area3D" parent="." unique_id=1838721963]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" unique_id=23378264]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=969701614]
