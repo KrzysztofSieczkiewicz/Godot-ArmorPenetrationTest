@@ -6,8 +6,8 @@ extends Node3D
 2. Take collision point and vector, probe mesh along this vector (move a bit back so texture hit is guaranteed)
 3. Take data from mesh (structural thickness) and proceed to calculate the ballistics
 
-TODO: consider how to easily probe the real "angle" from mesh instead of collider - collision probing should 
-TODO: this is highly inefficient if mesh gets big - consider Spatial Buckets, BVH or similar 
+TODO: consider how to easily probe the real "angle" from mesh instead of collider - collision probing should
+TODO: add optimization layer using AABB to reduce mesh geometry searching
 """
 
 @export_group("References")
@@ -44,7 +44,7 @@ func _ready() -> void:
 
 
 ### Extract the mesh geometry into RAM on ready
-### This solution de-indexes vertices into bloated array, but it makes reading simple at the cost of RAM
+### This solution de-indexes vertices into bloated array, but it makes reading simple at the cost of RAM - plan for optimizations later
 func _cache_geometry() -> void:
 	var mesh: Mesh = mesh_instance.mesh
 	var surface_count: int = mesh.get_surface_count()
@@ -92,7 +92,7 @@ func _cache_geometry() -> void:
 				write_index += 1
 
 
-func evaluate_armor(global_hit_pos: Vector3, global_ray_dir: Vector3) -> Dictionary:
+func evaluate_armor(global_hit_pos: Vector3, collided_surf_normal: Vector3) -> Dictionary:
 	# Cache check
 	if _cached_vertices.size() == 0 or !_texture_image:
 		return {"thickness": 0.0, "material": 0.0, "valid": false}
@@ -100,11 +100,15 @@ func evaluate_armor(global_hit_pos: Vector3, global_ray_dir: Vector3) -> Diction
 	# Transform coordinates into local
 	var inverse_transform = mesh_instance.global_transform.inverse()
 	var local_intersection_point: Vector3 = inverse_transform * global_hit_pos
-
+	
+	# Determine ray start and dir
+	var local_ray_dir: Vector3 = (inverse_transform.basis * -collided_surf_normal).normalized()
+	var local_ray_start: Vector3 = local_intersection_point - (local_ray_dir * ray_offset_distance)
+	
 	# Determine first intersection point with the mesh
 	var closest_dist: float = INF
 	var closest_uv: Vector2 = Vector2.ZERO
-	var triangle_found: bool = false
+	var hit_found: bool = false
 	
 	var face_count: int = _cached_vertices.size()
 	
@@ -113,85 +117,35 @@ func evaluate_armor(global_hit_pos: Vector3, global_ray_dir: Vector3) -> Diction
 		var v1: Vector3 = _cached_vertices[i+1]
 		var v2: Vector3 = _cached_vertices[i+2]
 		
-		var closest_point: Vector3 = _get_closest_point_on_triangle(local_intersection_point, v0, v1, v2)
-		var dist: float = local_intersection_point.distance_to(closest_point)
-		
-		if dist < closest_dist and dist <= max_ray_distance:
-			closest_dist = dist
-			triangle_found = true
+		var intersect_point = Geometry3D.ray_intersects_triangle(local_ray_start, local_ray_dir, v0, v1, v2)
+		if intersect_point != null:
+			var dist: float = local_ray_start.distance_to(intersect_point)
 			
-			var bary_coord: Vector3 = _calculate_barycentric(closest_point, v0, v1, v2)
-			
-			var uv0: Vector2 = _cached_uvs[i]
-			var uv1: Vector2 = _cached_uvs[i+1]
-			var uv2: Vector2 = _cached_uvs[i+2]
-			closest_uv = (uv0 * bary_coord.x) + (uv1 * bary_coord.y) + (uv2 * bary_coord.z)
+			if dist < closest_dist and dist <= max_ray_distance:
+				closest_dist = dist
+				hit_found = true
+				
+				var bary_coord: Vector3 = _calculate_barycentric(intersect_point, v0, v1, v2)
+				
+				var uv0: Vector2 = _cached_uvs[i]
+				var uv1: Vector2 = _cached_uvs[i+1]
+				var uv2: Vector2 = _cached_uvs[i+2]
+				closest_uv = (uv0 * bary_coord.x) + (uv1 * bary_coord.y) + (uv2 * bary_coord.z)
 	
-	if triangle_found == false:
+	if hit_found == false:
 		push_error("No mesh intersection was found")
 		return {"thickness": 0.0, "material": 0.0, "valid": false}
 	
 	var pixel_x: int = clampi(int(closest_uv.x * _texture_size.x), 0, _texture_size.x - 1)
-	var pixel_y: int = clampi(int(closest_uv.y * _texture_size.y), 0, _texture_size.y - 1)					# TODO: if causes problems - consider y-flip
+	var pixel_y: int = clampi(int((1.0 - closest_uv.y) * _texture_size.y), 0, _texture_size.y - 1) # flipped on purpose
 	var pixel_color: Color = _texture_image.get_pixel(pixel_x, pixel_y)
 	
 	return {																								# TODO: rethink the proper return
-		"thickness": pixel_color.r, # Mapped to 0.0 - 1.0 (multiply by max thickness)
-		"material": pixel_color.g,  # Representation of material ID/type index 								# TODO: simplify later
+		"thickness": pixel_color.r, # Nominally mapped to 0.0 - 1.0 (multiply by max thickness config if needed)
+		"material": pixel_color.g,  # Float representation of material ID/type index
 		"valid": true
 	}
 
-
-# TODO: read and review
-## Finds the closest point on triangle (a, b, c) to point p
-func _get_closest_point_on_triangle(p: Vector3, a: Vector3, b: Vector3, c: Vector3) -> Vector3:
-	var ab := b - a
-	var ac := c - a
-	var ap := p - a
-	
-	# Check if P in vertex region outside A
-	var d1 := ab.dot(ap)
-	var d2 := ac.dot(ap)
-	if d1 <= 0.0 and d2 <= 0.0:
-		return a
-		
-	# Check if P in vertex region outside B
-	var bp := p - b
-	var d3 := ab.dot(bp)
-	var d4 := ac.dot(bp)
-	if d3 >= 0.0 and d4 <= d3:
-		return b
-		
-	# Check if P in edge region of AB, if so return projection of P onto AB
-	var vc := d1 * d4 - d3 * d2
-	if vc <= 0.0 and d1 >= 0.0 and d3 <= 0.0:
-		var v := d1 / (d1 - d3)
-		return a + v * ab
-		
-	# Check if P in vertex region outside C
-	var cp := p - c
-	var d5 := ab.dot(cp)
-	var d6 := ac.dot(cp)
-	if d6 >= 0.0 and d5 <= d6:
-		return c
-		
-	# Check if P in edge region of AC, if so return projection of P onto AC
-	var vb := d5 * d2 - d1 * d6
-	if vb <= 0.0 and d2 >= 0.0 and d6 <= 0.0:
-		var w := d2 / (d2 - d6)
-		return a + w * ac
-		
-	# Check if P in edge region of BC, if so return projection of P onto BC
-	var va := d3 * d6 - d5 * d4
-	if va <= 0.0 and (d4 - d3) >= 0.0 and (d5 - d6) >= 0.0:
-		var w := (d4 - d3) / ((d4 - d3) + (d5 - d6))
-		return b + w * (c - b)
-		
-	# P is inside face region. Compute Q through barycentric coordinates
-	var denom := 1.0 / (va + vb + vc)
-	var v := vb * denom
-	var w := vc * denom
-	return a + ab * v + ac * w
 
 # TODO: read and review
 ## Computes the barycentric coordinates for point p with respect to triangle (a, b, c)
