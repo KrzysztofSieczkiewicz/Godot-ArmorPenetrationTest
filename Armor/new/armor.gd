@@ -1,13 +1,13 @@
 class_name ArmorComponent
-extends Node3D
+extends RigidBody3D
 
 """
 1. Detect collision when projectile enters the collider
 2. Take collision point and vector, probe mesh along this vector (move a bit back so texture hit is guaranteed)
 3. Take data from mesh (structural thickness) and proceed to calculate the ballistics
 
-TODO: consider how to easily probe the real "angle" from mesh instead of collider - collision probing should
-TODO: add optimization layer using AABB to reduce mesh geometry searching
+TODO: consider how to easily probe the real "angle" from mesh instead of collider - collision probing should occur only once
+TODO: after changing mesh search from "collider surface normal on collision point" to mesh search add optimization layer using AABB to reduce mesh geometry searching
 """
 
 @export_group("References")
@@ -16,7 +16,7 @@ TODO: add optimization layer using AABB to reduce mesh geometry searching
 
 @export_group("Settings")
 @export var ray_offset_distance: float = 0.05 # meter
-@export var max_ray_distance: float = 0.4
+@export var max_ray_distance: float = 0.15 # meter
 
 # Caches
 var _cached_vertices: PackedVector3Array
@@ -93,8 +93,9 @@ func _cache_geometry() -> void:
 
 
 func evaluate_armor(global_hit_pos: Vector3, collided_surf_normal: Vector3) -> Dictionary:
-	# Cache check
-	if _cached_vertices.size() == 0 or !_texture_image:
+	
+	if _cached_vertices.size() == 0 or !_texture_image:			# Cache check
+		push_error("No cached vertices or texture image")
 		return {"thickness": 0.0, "material": 0.0, "valid": false}
 		
 	# Transform coordinates into local
@@ -118,12 +119,18 @@ func evaluate_armor(global_hit_pos: Vector3, collided_surf_normal: Vector3) -> D
 		var v2: Vector3 = _cached_vertices[i+2]
 		
 		var intersect_point = Geometry3D.ray_intersects_triangle(local_ray_start, local_ray_dir, v0, v1, v2)
+		
 		if intersect_point != null:
 			var dist: float = local_ray_start.distance_to(intersect_point)
+			
+			push_warning("dist: ", dist)
 			
 			if dist < closest_dist and dist <= max_ray_distance:
 				closest_dist = dist
 				hit_found = true
+				
+				push_warning("hit found: ", hit_found)
+				push_warning("closest dist: ", closest_dist)
 				
 				var bary_coord: Vector3 = _calculate_barycentric(intersect_point, v0, v1, v2)
 				
@@ -147,7 +154,7 @@ func evaluate_armor(global_hit_pos: Vector3, collided_surf_normal: Vector3) -> D
 	}
 
 
-# TODO: read and review
+# TODO: read and review - might be an overkill
 ## Computes the barycentric coordinates for point p with respect to triangle (a, b, c)
 func _calculate_barycentric(p: Vector3, a: Vector3, b: Vector3, c: Vector3) -> Vector3:
 	var v0 := b - a

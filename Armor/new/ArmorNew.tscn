@@ -2,11 +2,26 @@
 
 [ext_resource type="Script" uid="uid://1xhvm1oaqqm2" path="res://Armor/new/armor.gd" id="1_uk03d"]
 
-[node name="ArmorNew" type="Node3D" unique_id=630271777]
+[sub_resource type="Gradient" id="Gradient_uk03d"]
+colors = PackedColorArray(0.78431374, 0, 0, 1, 0.78431374, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_e3clx"]
+gradient = SubResource("Gradient_uk03d")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bapby"]
+size = Vector3(1, 1, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pdle8"]
+size = Vector3(1, 1, 0.1)
+
+[node name="ArmorNew" type="RigidBody3D" unique_id=1939107874 node_paths=PackedStringArray("mesh_instance")]
+gravity_scale = 0.0
 script = ExtResource("1_uk03d")
+mesh_instance = NodePath("MeshInstance3D")
+data_texture = SubResource("GradientTexture2D_e3clx")
 
-[node name="Area3D" type="Area3D" parent="." unique_id=1838721963]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" unique_id=23378264]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=23378264]
+shape = SubResource("BoxShape3D_bapby")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=969701614]
+mesh = SubResource("BoxMesh_pdle8")

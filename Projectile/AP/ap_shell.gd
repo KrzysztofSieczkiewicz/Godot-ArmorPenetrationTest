@@ -138,7 +138,7 @@ func _run_ghost_mode(start: Vector3, motion: Vector3) -> Dictionary:								# TO
 
 func _run_collision_mode(start: Vector3, motion: Vector3, frame_delta: float, hit_data: Dictionary) -> void:
 	var packet = ResolutionPacket.new()
-	packet.impact_point = hit_data.get("point", global_position)
+	packet.impact_point = hit_data.get("position", global_position)
 	packet.impact_normal = hit_data.get("normal", Vector3.UP)
 	packet.projectile_velocity = current_velocity
 	packet.target_collider = hit_data.get("collider")
@@ -153,6 +153,13 @@ func _run_collision_mode(start: Vector3, motion: Vector3, frame_delta: float, hi
 	
 	var collision_armor_uv = _get_collision_uv(packet.impact_point, packet.impact_normal)
 	push_warning(packet.target_collider)
+	
+	push_warning("Impact point: ", packet.impact_point)
+	push_warning("Impact normal: ", packet.impact_normal)
+	
+	var armor_texture_thickness = packet.target_collider.evaluate_armor(packet.impact_point, packet.impact_normal)
+	push_warning(armor_texture_thickness)
+	
 	var armor_structural_thickness = packet.target_collider.get_armor_thickness(collision_armor_uv)					# TODO: this might be unsafe - find a clear way of ensuring that collider has "armor thickness" - note: this might be much easier after moving most of collision into management class instead
 	
 	var distance_to_impact = start.distance_to(packet.impact_point)
@@ -223,7 +230,7 @@ func _handle_penetration(packet: ResolutionPacket, impact_angle: float):
 	
 	var effective_angle = max(0.0, impact_angle - normalization_factor) # normalization
 	
-	var impact_vector_norm: Vector3 = Vector3.ZERO.normalized()
+	var impact_vector_norm: Vector3 = Vector3.ZERO
 	var armor_thickness = BallisticProber.probe_thickness(space_state, packet.impact_point, impact_vector_norm)
 	
 	push_warning("Probed thickness: ", armor_thickness)
