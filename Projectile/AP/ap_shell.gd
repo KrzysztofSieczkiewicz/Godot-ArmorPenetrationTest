@@ -190,6 +190,7 @@ func _process_balistic_resolver(packet: ResolutionPacket, remaining_delta: float
 		_handle_penetration(packet, impact_angle)
 
 
+# TODO: review this function - graze factor logic seems to be off and required clamping as a quick fix
 func _handle_ricochet(packet: ResolutionPacket, angle: float):
 	push_warning("Ricochet")
 	
@@ -199,10 +200,15 @@ func _handle_ricochet(packet: ResolutionPacket, angle: float):
 	print("\nRicochet: ")
 	print("New direction: ", reflected_dir.normalized())
 	
+	# Determine energy loss on ricochet
 	var dynamic_friction: float = 0.4
-	var graze_factor: float = remap(deg_to_rad(angle), ricochet_angle_threshold_rad, PI/2, dynamic_friction, 0.85)
+	var raw_graze_factor: float = remap(deg_to_rad(angle), ricochet_angle_threshold_rad, PI/2, dynamic_friction, 0.85)
+	var clamped_graze_factor: float = clamp(raw_graze_factor, dynamic_friction, 0.85)
 	
-	current_velocity = reflected_dir * graze_factor
+	current_velocity = reflected_dir * clamped_graze_factor
+	
+	print("Graze factor: ", clamped_graze_factor)
+	print("Post ricochet velocity: ", current_velocity)
 	
 	if current_velocity.length_squared() > 0.001:
 		look_at(global_position - current_velocity.normalized(), Vector3.UP)

@@ -7,6 +7,10 @@
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_r0du0"]
 
+[sub_resource type="SphereMesh" id="SphereMesh_cggyk"]
+radius = 0.2
+height = 0.4
+
 [node name="Main" type="Node3D" unique_id=238844185]
 
 [node name="World" type="Node3D" parent="." unique_id=1356654099]
@@ -31,8 +35,20 @@ camera_attributes = SubResource("CameraAttributesPractical_r0du0")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 8.138618)
 
 [node name="ArmorNew" parent="." unique_id=630271777 instance=ExtResource("3_r0du0")]
-transform = Transform3D(1, 0, 0, 0, 0.25881898, 0.9659256, 0, -0.9659256, 0.25881898, 0, 2.9968295, -4.0124736)
+transform = Transform3D(1, 0, 0, 0, 0.258819, 0.96592563, 0, -0.96592563, 0.258819, 0, 2.8642097, -4.0124736)
+collision_mask = 7
+
+[node name="ArmorNew2" parent="." unique_id=1605792855 instance=ExtResource("3_r0du0")]
+transform = Transform3D(1, 0, 0, 0, 0.9659256, -0.25881904, 0, 0.25881904, 0.9659256, 0, 3.5598996, -4.539163)
 collision_mask = 7
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=293107762]
 transform = Transform3D(-4.222196e-08, -0.25881907, 0.9659258, -1.131334e-08, 0.9659259, 0.25881907, -1, 8.881784e-16, -4.371139e-08, 7.065508, 6, -3.3647938)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=701683898]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.95, -4.14)
+mesh = SubResource("SphereMesh_cggyk")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=621949084]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.441, -8.261)
+mesh = SubResource("SphereMesh_cggyk")
