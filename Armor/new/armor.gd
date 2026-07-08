@@ -1,5 +1,5 @@
 class_name ArmorComponent
-extends RigidBody3D
+extends StaticBody3D
 
 """
 1. Detect collision when projectile enters the collider

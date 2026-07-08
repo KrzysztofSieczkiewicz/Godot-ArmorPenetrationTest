@@ -14,8 +14,9 @@ size = Vector3(1, 1, 0.1)
 [sub_resource type="BoxMesh" id="BoxMesh_pdle8"]
 size = Vector3(1, 1, 0.1)
 
-[node name="ArmorNew" type="RigidBody3D" unique_id=1939107874 node_paths=PackedStringArray("mesh_instance")]
-gravity_scale = 0.0
+[node name="ArmorNew" type="StaticBody3D" unique_id=1605792855 node_paths=PackedStringArray("mesh_instance")]
+collision_layer = 7
+collision_mask = 0
 script = ExtResource("1_uk03d")
 mesh_instance = NodePath("MeshInstance3D")
 data_texture = SubResource("GradientTexture2D_e3clx")

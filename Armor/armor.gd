@@ -10,7 +10,7 @@ func _ready() -> void:
 	if thickness_map:
 		map_image = thickness_map.get_image()
 
-func get_armor_thickness(uv: Vector2) -> float:
+func evaluate_armor(uv: Vector2) -> float:
 	if not map_image:
 		return 0.0
 	

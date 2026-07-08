@@ -1,3 +1,4 @@
+StaticBody3D
 TextureRect
 RigidBody3D
 Node3D
@@ -11,5 +12,3 @@ WorldEnvironment
 OmniLight3D
 Camera3D
 CSGBox3D
-StaticBody3D
-CSGMesh3D

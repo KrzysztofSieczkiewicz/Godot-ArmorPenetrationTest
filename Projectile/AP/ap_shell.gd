@@ -151,16 +151,16 @@ func _run_collision_mode(start: Vector3, motion: Vector3, frame_delta: float, hi
 	
 	packet.relative_velocity = packet.projectile_velocity - packet.target_velocity
 	
-	var collision_armor_uv = _get_collision_uv(packet.impact_point, packet.impact_normal)
 	push_warning(packet.target_collider)
-	
 	push_warning("Impact point: ", packet.impact_point)
 	push_warning("Impact normal: ", packet.impact_normal)
 	
 	var armor_texture_thickness = packet.target_collider.evaluate_armor(packet.impact_point, packet.impact_normal)
 	push_warning(armor_texture_thickness)
+	var armor_structural_thickness = armor_texture_thickness.get("thickness")
 	
-	var armor_structural_thickness = packet.target_collider.get_armor_thickness(collision_armor_uv)					# TODO: this might be unsafe - find a clear way of ensuring that collider has "armor thickness" - note: this might be much easier after moving most of collision into management class instead
+	print("Structural thickness: ", armor_structural_thickness)
+	print("Probed thickness: ", BallisticProber.probe_thickness(space_state, packet.impact_point, packet.projectile_velocity.normalized()))
 	
 	var distance_to_impact = start.distance_to(packet.impact_point)
 	var time_to_impact = distance_to_impact / current_velocity.length()
@@ -178,6 +178,10 @@ func _process_balistic_resolver(packet: ResolutionPacket, remaining_delta: float
 	var td_ratio = armor_thickness / (2 * shell_radius)
 	var is_overmatch = td_ratio < 0.5 and impact_angle > deg_to_rad(45.0)
 	
+	print("Thickness / shell diameter ratio: ", td_ratio)
+	print("Overmatch: ", is_overmatch)
+	print("Is ricocheting: ", impact_angle > ricochet_angle_threshold_rad)
+	
 	if is_overmatch:
 		_handle_overmatch(packet, impact_angle, armor_thickness, td_ratio)
 	elif impact_angle > ricochet_angle_threshold_rad:
@@ -186,12 +190,14 @@ func _process_balistic_resolver(packet: ResolutionPacket, remaining_delta: float
 		_handle_penetration(packet, impact_angle)
 
 
-
 func _handle_ricochet(packet: ResolutionPacket, angle: float):
 	push_warning("Ricochet")
 	
 	global_position = packet.impact_point + (packet.impact_normal * shell_radius)
 	var reflected_dir = current_velocity.bounce(packet.impact_normal)
+	
+	print("\nRicochet: ")
+	print("New direction: ", reflected_dir.normalized())
 	
 	var dynamic_friction: float = 0.4
 	var graze_factor: float = remap(deg_to_rad(angle), ricochet_angle_threshold_rad, PI/2, dynamic_friction, 0.85)
@@ -230,29 +236,10 @@ func _handle_penetration(packet: ResolutionPacket, impact_angle: float):
 	
 	var effective_angle = max(0.0, impact_angle - normalization_factor) # normalization
 	
-	var impact_vector_norm: Vector3 = Vector3.ZERO
+	var impact_vector_norm: Vector3 = packet.projectile_velocity.normalized()
 	var armor_thickness = BallisticProber.probe_thickness(space_state, packet.impact_point, impact_vector_norm)
 	
 	push_warning("Probed thickness: ", armor_thickness)
+	
+	queue_free()
 	pass
-
-
-func _get_collision_uv(impact_point: Vector3, impact_normal: Vector3) -> Vector2:
-	var ray_start = impact_point + (impact_normal * 0.01)
-	var ray_end = impact_point - (impact_normal * 0.03)
-	
-	var collision_masks = MASK_STATIC | MASK_DYNAMIC | MASK_PROJECTILE 											# TODO: move higher up or get by parameter
-	var uv_query = PhysicsRayQueryParameters3D.create(ray_start, ray_end, collision_masks)
-	uv_query.collide_with_bodies = true
-	uv_query.collide_with_areas = true  																		# TODO: might not be necessary
-	
-	var uv_result = space_state.intersect_ray(uv_query)
-	if uv_result.size() == 0:
-		push_error("No collision found for UV query.")
-		return Vector2.ZERO
-		
-	if "uv" in uv_result:
-		return uv_result["uv"] as Vector2
-		
-	push_error("Collision occurred, but no UV coordinates were returned. Check collision shape type.")
-	return Vector2.ZERO
