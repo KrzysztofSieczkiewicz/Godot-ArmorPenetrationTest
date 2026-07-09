@@ -1,15 +1,28 @@
-[gd_scene load_steps=3 format=3 uid="uid://jupn6afamq04"]
+[gd_scene format=3 uid="uid://cf64pas66of7h"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_6nrul"]
-size = Vector3(3, 2, 0.1)
+[ext_resource type="Script" uid="uid://1xhvm1oaqqm2" path="res://Armor/armor.gd" id="1_uk03d"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_8nmin"]
-size = Vector3(3, 2, 0.1)
+[sub_resource type="Gradient" id="Gradient_uk03d"]
+colors = PackedColorArray(0.78431374, 0, 0, 1, 0.78431374, 0, 0, 1)
 
-[node name="Armor" type="RigidBody3D"]
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_e3clx"]
+gradient = SubResource("Gradient_uk03d")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-shape = SubResource("BoxShape3D_6nrul")
+[sub_resource type="BoxShape3D" id="BoxShape3D_bapby"]
+size = Vector3(1, 1, 0.1)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("BoxMesh_8nmin")
+[sub_resource type="BoxMesh" id="BoxMesh_pdle8"]
+size = Vector3(1, 1, 0.1)
+
+[node name="ArmorNew" type="StaticBody3D" unique_id=1605792855 node_paths=PackedStringArray("mesh_instance")]
+collision_layer = 7
+collision_mask = 0
+script = ExtResource("1_uk03d")
+mesh_instance = NodePath("MeshInstance3D")
+data_texture = SubResource("GradientTexture2D_e3clx")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=23378264]
+shape = SubResource("BoxShape3D_bapby")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=969701614]
+mesh = SubResource("BoxMesh_pdle8")
