@@ -13,7 +13,7 @@ extends Node3D
 		2a. Determine Slip Distance (consider if depth matters as well)
 		2b. Determine Gyroscopic Precession -> this might need to be moved into penetration_info as well, but may be an overcomplication - reconsider
 		2c. Determine projectile integrity (shell energy loss (consider setting shell to 'tumble') and potential spall)
-	
+
 3rd Phase - ballistics
 	1. If penetrates
 		1a. Determine normalization and denormalization
@@ -36,8 +36,8 @@ create external manager class that will determine both armor and shell behaviour
 @export var shell_radius: float = 0.05 				# m
 @export var ogive_radius: float = 3*shell_radius 	# m
 
-@export var ricochet_critical_zone_angle: float = 55.0
-@export var ricochet_threshold_angle: float = 70.0
+@export var ricochet_critical_zone_angle: float = 55.0 # above this - maybe pen
+@export var ricochet_threshold_angle: float = 70.0 # above this - pen
 @export var normalization_factor: float = 0.05
 
 @export var gyro_progr_angle_min: float = 1
@@ -159,7 +159,7 @@ func _run_collision_mode(start: Vector3, motion: Vector3, frame_delta: float, hi
 	push_warning(armor_texture_thickness)
 	var armor_structural_thickness = armor_texture_thickness.get("thickness")
 	
-	print("Structural thickness: ", armor_structural_thickness)
+	print("Structural thickness coeff: ", armor_structural_thickness)
 	print("Probed thickness: ", BallisticProber.probe_thickness(space_state, packet.impact_point, packet.projectile_velocity.normalized()))
 	
 	var distance_to_impact = start.distance_to(packet.impact_point)
@@ -238,13 +238,11 @@ func _handle_overmatch(packet: ResolutionPacket, impact_angle: float, armor_thic
 
 
 func _handle_penetration(packet: ResolutionPacket, impact_angle: float):
-	push_warning("Penetration")
-	
 	var effective_angle = max(0.0, impact_angle - normalization_factor) # normalization
-	
 	var impact_vector_norm: Vector3 = packet.projectile_velocity.normalized()
 	var armor_thickness = BallisticProber.probe_thickness(space_state, packet.impact_point, impact_vector_norm)
 	
+	push_warning("Penetration")
 	push_warning("Probed thickness: ", armor_thickness)
 	
 	queue_free()

@@ -1,15 +1,11 @@
 [gd_scene format=3 uid="uid://blcg01yfyvqgj"]
 
 [ext_resource type="PackedScene" uid="uid://bhg2wj0ealksq" path="res://Cannon/Cannon.tscn" id="1_glv2v"]
-[ext_resource type="PackedScene" uid="uid://cf64pas66of7h" path="res://Armor/new/ArmorNew.tscn" id="3_r0du0"]
+[ext_resource type="PackedScene" uid="uid://cf64pas66of7h" path="res://Armor/Armor.tscn" id="3_r0du0"]
 
 [sub_resource type="Environment" id="Environment_uu6xs"]
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_r0du0"]
-
-[sub_resource type="SphereMesh" id="SphereMesh_cggyk"]
-radius = 0.2
-height = 0.4
 
 [node name="Main" type="Node3D" unique_id=238844185]
 
@@ -44,11 +40,3 @@ collision_mask = 7
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=293107762]
 transform = Transform3D(-4.222196e-08, -0.25881907, 0.9659258, -1.131334e-08, 0.9659259, 0.25881907, -1, 8.881784e-16, -4.371139e-08, 7.065508, 6, -3.3647938)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=701683898]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.95, -4.14)
-mesh = SubResource("SphereMesh_cggyk")
-
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=621949084]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.441, -8.261)
-mesh = SubResource("SphereMesh_cggyk")
