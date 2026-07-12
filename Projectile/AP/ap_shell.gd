@@ -38,16 +38,21 @@ NOW:
 	DONE - allow for rotating and moving the shell in relation to the tip point
 	DONE - on penetration - move the shell so the tip is on exit_point
 	- retrigger the probing for penetration(?) - shapecast is problematic here as it can collide with the same armor piece, but any exclusions will make it ignore the collider if it hits it again (e.g. internal corner pen)
-		it seems that the best way forward is moving towards a single raycast (change to bundle later)
+		it seems that the best way forward is moving towards a single raycast (change to bundle later) to determine penetration behavior
 """
 """
 NEXT:
-	- consider grouping collisions if armor colliders are joined together or very close - then there are single main entry-exit point is responsible for spalling and minor entry-exit for each layer and thickness calc
 	- consider switch from single raycast to a bundle - then probed thickness might be weight-averaged from different probings:
 		Make the tip a main raycast - when it collides/penetrates, the supporting raycasts probe only the same collider
 		if the main raycast doesn't find anything, check supporting raycasts
 		- check how to limit missing detection on hitting thin plate from the side
+	- when collision by shapecast is detected and the projectile goes into the penetration/non-penetration mode - expand the functions to handle the situation where the projectile will hit multiple surfaces at the nearly same time
+		and different events might occur (e.g. tight space between two angled plates - (double ricochet) or (ricochet and penetration for different surfaces). This might require handling certain redirections on hit / breaking collision group into separate events / special energy loss event
 """
+
+# TODO: move to general config later
+@export var penetration_detection_threshold: float = 0.05	# m			# Above what distance between armor colliders the penetration is to be considered as separate event
+# END_TODO
 
 @export var muzzle_velocity: float = 1200.0 		# m/s
 @export var mass: float = 15.0 						# kg
