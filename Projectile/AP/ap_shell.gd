@@ -34,9 +34,9 @@ create external manager class that will determine both armor and shell behaviour
 
 """
 NOW:
-	- add another variable that determines position of the tip in relation to the center (or just tip position if better)
-	- allow for rotating and moving the shell in relation to the tip point
-	- on penetration - move the shell so the tip is on exit_point
+	DONE - add another variable that determines position of the tip in relation to the center (or just tip position if better)
+	DONE - allow for rotating and moving the shell in relation to the tip point
+	DONE - on penetration - move the shell so the tip is on exit_point
 	- retrigger the probing for penetration(?) - shapecast is problematic here as it can collide with the same armor piece, but any exclusions will make it ignore the collider if it hits it again (e.g. internal corner pen)
 		it seems that the best way forward is moving towards a single raycast (change to bundle later)
 """
@@ -52,8 +52,9 @@ NEXT:
 @export var muzzle_velocity: float = 1200.0 		# m/s
 @export var mass: float = 15.0 						# kg
 @export var shell_radius: float = 0.05 				# m
-@export var ogive_radius: float = 3*shell_radius 	# m
+@export var ogive_radius: float = 0.15				# m			# Usually 3 * shell_radius
 @export var shell_length: float = 0.33				# m
+@export var tip_to_center_distance: float = 0.15	# m			# Intended to allow for precise shell positioning on penetration
 
 @export var ricochet_critical_zone_angle: float = 55.0 # above this - maybe pen
 @export var ricochet_threshold_angle: float = 70.0 # above this - pen
@@ -267,8 +268,22 @@ func _handle_penetration(packet: ResolutionPacket, impact_angle: float):
 	print("exit point: ", armor_probing_result.exit_point)
 	print("thickness: ", armor_probing_result.thickness)
 	
+	print("penetration direction: ", (armor_probing_result.exit_point - armor_probing_result.entry_point).normalized() )
+	print("initial pen direction: ", packet.projectile_velocity.normalized() )
+	
 	print("old global position: ", global_position)
-	global_position = armor_probing_result.exit_point
+	_transform_around_tip(armor_probing_result.exit_point, packet.projectile_velocity)
 	print("new global position: ", global_position)
 	#queue_free()
 	current_velocity = Vector3.ZERO
+
+
+## Rotate the shell around tip point
+## Note: shell must be oriented along movement vector
+func _transform_around_tip(position: Vector3, direction: Vector3) -> void:
+	var target_dir = direction.normalized()
+	var new_origin_position = position - (tip_to_center_distance * target_dir)
+	var target_transform = Transform3D().looking_at(target_dir)
+	
+	global_transform.basis = target_transform.basis
+	global_position = new_origin_position

@@ -4,7 +4,7 @@
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_1p38p"]
 radius = 0.038
-height = 0.33
+height = 0.35
 
 [node name="APShell" type="Node3D" unique_id=2071045347]
 script = ExtResource("1_5hvi4")
