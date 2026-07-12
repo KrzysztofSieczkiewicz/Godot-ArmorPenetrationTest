@@ -95,7 +95,7 @@ func launch() -> void:
 func _physics_process(delta: float) -> void:
 	space_state = get_world_3d().direct_space_state
 	
-	#current_velocity.y -= 9.81 * delta
+	#current_velocity.y -= 9.81 * delta												# TODO: re-enable the gravity
 	
 	var start_pos = global_position
 	var travel_vector = current_velocity * delta
