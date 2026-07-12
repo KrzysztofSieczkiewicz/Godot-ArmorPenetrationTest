@@ -31,10 +31,29 @@ do the same for armor
 create external manager class that will determine both armor and shell behaviour post hit
 """
 
+
+"""
+NOW:
+	- add another variable that determines position of the tip in relation to the center (or just tip position if better)
+	- allow for rotating and moving the shell in relation to the tip point
+	- on penetration - move the shell so the tip is on exit_point
+	- retrigger the probing for penetration(?) - shapecast is problematic here as it can collide with the same armor piece, but any exclusions will make it ignore the collider if it hits it again (e.g. internal corner pen)
+		it seems that the best way forward is moving towards a single raycast (change to bundle later)
+"""
+"""
+NEXT:
+	- consider grouping collisions if armor colliders are joined together or very close - then there are single main entry-exit point is responsible for spalling and minor entry-exit for each layer and thickness calc
+	- consider switch from single raycast to a bundle - then probed thickness might be weight-averaged from different probings:
+		Make the tip a main raycast - when it collides/penetrates, the supporting raycasts probe only the same collider
+		if the main raycast doesn't find anything, check supporting raycasts
+		- check how to limit missing detection on hitting thin plate from the side
+"""
+
 @export var muzzle_velocity: float = 1200.0 		# m/s
 @export var mass: float = 15.0 						# kg
 @export var shell_radius: float = 0.05 				# m
 @export var ogive_radius: float = 3*shell_radius 	# m
+@export var shell_length: float = 0.33				# m
 
 @export var ricochet_critical_zone_angle: float = 55.0 # above this - maybe pen
 @export var ricochet_threshold_angle: float = 70.0 # above this - pen
@@ -76,7 +95,7 @@ func launch() -> void:
 func _physics_process(delta: float) -> void:
 	space_state = get_world_3d().direct_space_state
 	
-	current_velocity.y -= 9.81 * delta
+	#current_velocity.y -= 9.81 * delta
 	
 	var start_pos = global_position
 	var travel_vector = current_velocity * delta
@@ -240,10 +259,16 @@ func _handle_overmatch(packet: ResolutionPacket, impact_angle: float, armor_thic
 func _handle_penetration(packet: ResolutionPacket, impact_angle: float):
 	var effective_angle = max(0.0, impact_angle - normalization_factor) # normalization
 	var impact_vector_norm: Vector3 = packet.projectile_velocity.normalized()
-	var armor_thickness = BallisticProber.probe_thickness(space_state, packet.impact_point, impact_vector_norm)
+	var armor_probing_result = BallisticProber.probe_thickness(space_state, packet.impact_point, impact_vector_norm)
 	
 	push_warning("Penetration")
-	push_warning("Probed thickness: ", armor_thickness)
+	print("\nPenetration:")
+	print("entry point: ", armor_probing_result.entry_point)
+	print("exit point: ", armor_probing_result.exit_point)
+	print("thickness: ", armor_probing_result.thickness)
 	
-	queue_free()
-	pass
+	print("old global position: ", global_position)
+	global_position = armor_probing_result.exit_point
+	print("new global position: ", global_position)
+	#queue_free()
+	current_velocity = Vector3.ZERO

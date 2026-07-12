@@ -2,42 +2,42 @@ class_name BallisticProber
 extends RefCounted
 
 const RAY_LENGTH: float = 1.5
-const RAY_ORIGIN_OFFSET: float = 0.01
+const RAY_ORIGIN_OFFSET: float = 0.002
 const RAY_EXIT_ORIGIN_STEP: float = 0.25
+
+
+class ArmorProbingPacket:
+	var entry_point: Vector3
+	var exit_point: Vector3
+	var thickness: float
+
 
 static func probe_thickness(
 	space_state: PhysicsDirectSpaceState3D,
 	origin_point: Vector3,
 	direction_normalized: Vector3,
-	collision_mask: int = 4294967295 								# TODO: By default checks all layers - switch later
-) -> float:
-	
+	collision_mask: int = 4294967295 								# TODO: Not used at all - find a way later (might be better to just accept RID of the target collider as an arg)
+) -> ArmorProbingPacket:
+	var probing_result = ArmorProbingPacket.new()
 	var entry_result = _find_entry_point(space_state, origin_point, direction_normalized, collision_mask)
 	
-	print("\nThickness probe:")
-	print("Origin point: ", origin_point)
-	print("Direction normalized: ", direction_normalized)
-	print("Ray length: ", RAY_LENGTH)
-	print("End point: ", origin_point + direction_normalized * RAY_LENGTH)
-	
 	if not entry_result.is_empty():
-		var entry_point: Vector3 = entry_result.position
+		probing_result.entry_point = entry_result.position
 		var target_collider: CollisionObject3D = entry_result.collider
-		var exit_point_optional = _find_exit_point(space_state, entry_point, target_collider, direction_normalized, collision_mask)
+		var exit_point_optional = _find_exit_point(space_state, probing_result.entry_point, target_collider, direction_normalized, collision_mask)
 		
 		if not exit_point_optional.is_empty():
-			var exit_point: Vector3 = exit_point_optional[0]
-			var thickness = (exit_point - entry_point).length()
+			probing_result.exit_point = exit_point_optional[0]
+			probing_result.thickness = (probing_result.exit_point - probing_result.entry_point).length()
 			
-			print("Thickness: ", thickness)
-			
-			return thickness
+			return probing_result
 		else:
 			push_error("Exit collision not found for collider %s" % target_collider.name)
 	else:    
 		push_error("Entry collision not found")
-		
-	return 0.0
+	
+	return probing_result
+
 
 static func _find_entry_point(
 	space_state: PhysicsDirectSpaceState3D,
@@ -52,7 +52,7 @@ static func _find_entry_point(
 	return space_state.intersect_ray(query_entry)
 
 
-static func _find_exit_point(
+static func _find_exit_point(														# TODO: both inefficient and might be working wrong with more complex colliders
 	space_state: PhysicsDirectSpaceState3D,
 	entry_point: Vector3,
 	target_collider: CollisionObject3D,
