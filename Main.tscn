@@ -31,27 +31,23 @@ camera_attributes = SubResource("CameraAttributesPractical_r0du0")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 8.138618)
 
 [node name="ArmorNew" parent="." unique_id=630271777 instance=ExtResource("3_r0du0")]
-transform = Transform3D(1, 0, 0, 0, 0.258819, 0.96592563, 0, -0.96592563, 0.258819, 0, 2.8642097, -4.0124736)
-collision_mask = 7
-
-[node name="ArmorNew2" parent="." unique_id=1605792855 instance=ExtResource("3_r0du0")]
-transform = Transform3D(1, 0, 0, 0, 0.9659256, -0.25881904, 0, 0.25881904, 0.9659256, 0, 3.5598996, -4.539163)
+transform = Transform3D(1, 0, 0, 0, 0.258819, 0.96592563, 0, -0.96592563, 0.258819, 0, 3, -4)
 collision_mask = 7
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=293107762]
 transform = Transform3D(-4.222196e-08, -0.25881907, 0.9659258, -1.131334e-08, 0.9659259, 0.25881907, -1, 8.881784e-16, -4.371139e-08, 7.065508, 6, -3.3647938)
 
 [node name="Camera3D2" type="Camera3D" parent="." unique_id=154548304]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 1.230737, 3.2757561, -4.6177735)
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 1.230737, 3.0031984, -3.9945123)
 projection = 1
 current = true
 
-[node name="CSGSphere3D" type="CSGSphere3D" parent="." unique_id=2074179560]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.241, -4.573)
+[node name="Armor2_entry" type="CSGSphere3D" parent="." unique_id=2074179560]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4983809, 3.239, -4.573)
 visible = false
 radius = 0.1
 
-[node name="CSGSphere3D2" type="CSGSphere3D" parent="." unique_id=976018727]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.292, -4.663)
+[node name="Armor2_exit" type="CSGSphere3D" parent="." unique_id=1531871683]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.49824518, 3.292, -4.663)
 visible = false
 radius = 0.1

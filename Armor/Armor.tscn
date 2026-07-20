@@ -9,10 +9,10 @@ colors = PackedColorArray(0.78431374, 0, 0, 1, 0.78431374, 0, 0, 1)
 gradient = SubResource("Gradient_uk03d")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_bapby"]
-size = Vector3(1, 1, 0.1)
+size = Vector3(1, 1, 0.05)
 
 [sub_resource type="BoxMesh" id="BoxMesh_pdle8"]
-size = Vector3(1, 1, 0.1)
+size = Vector3(1, 1, 0.05)
 
 [node name="ArmorNew" type="StaticBody3D" unique_id=1605792855 node_paths=PackedStringArray("mesh_instance")]
 collision_layer = 7
