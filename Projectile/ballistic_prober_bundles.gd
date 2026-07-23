@@ -1,4 +1,4 @@
-class_name GroupedBallisticProber
+class_name BallisticProberBundles
 extends RefCounted
 
 const RAY_LENGTH: float = 1.5
@@ -11,12 +11,96 @@ class ArmorProbingPacket:
 	var exit_point: Vector3
 	var thickness: float
 
-"""
-TODO: make this class to work with collisions as groups of events instead of treating each collider separately:
-	- on collision event - send a probe that will find all colliders to pierce
-	- introduce a distance-between-colliders threshold to separate the penetrations into groups - probably only for the main collider ray (just for performance sake)
-	- for a single group return an array of ArmorProbingPackets (or a dictionary with RIDs?)
-"""
+
+
+static func probe_main_ray() -> void:
+	pass
+
+
+static func probe_secondary_rays() -> void:
+	pass
+	
+## TODO: rework the return type and structure
+static func get_collisions_along_path(
+	space_state: PhysicsDirectSpaceState3D,
+	origin_point: Vector3,
+	direction_normalized: Vector3,
+	collision_mask: int,
+	collision_gap_threshold: float, 			## Distance between colliders surfaces above which collision group is separated
+	ray_offset: float,
+) -> Array[Dictionary]:
+	var collision_groups: Array[Dictionary] = []
+	var current_origin = origin_point
+	var ray_position_epsilon = 0.005
+	
+	while true:
+		# 1. Find entry point
+		var entry_result = _find_entry_point(
+				space_state, 
+				origin_point, 
+				direction_normalized, 
+				collision_mask,
+		)
+		
+		# EARLY EXIT - no more colliders
+		if entry_result.is_empty():
+			break 
+		
+		var entry_pos: Vector3 = entry_result.position
+		var exit_pos: Vector3 = entry_pos
+		var target_collider: CollisionObject3D = entry_result.collider
+		
+		# 2. Find exit point
+		var exit_result = _find_exit_point(
+			space_state, 
+			entry_pos, 
+			target_collider, 
+			direction_normalized, 
+			collision_mask
+		)
+		
+		# EARLY EXIT - no exit found
+		if exit_result == Vector3.INF:
+			break 
+		else:
+			exit_pos = exit_result
+		
+		if collision_groups.is_empty():
+			collision_groups.append({
+				"entry": entry_pos,
+				"exit": exit_pos,
+				"colliders": [target_collider],
+			})
+		else:
+			var last_group = collision_groups.back()
+			var gap = entry_pos.distance_to(last_group["exit"])
+			
+			if gap <= collision_gap_threshold:
+				last_group["exit"] = exit_pos
+				if not last_group["colliders"].has(target_collider):
+					last_group["colliders"].append(target_collider)
+			else:
+				collision_groups.append({
+					"entry": entry_pos,
+					"exit": exit_pos,
+					"colliders": [target_collider],
+				})
+		
+		current_origin = exit_pos + (direction_normalized * ray_position_epsilon)
+	
+	return collision_groups
+	
+	# find entry point
+	# find exit point
+	# is there another entry point within length distance_threshold
+	#	if yes -> repeat and add to the result array
+	#	if not -> return the array
+	
+	"""
+	Find an entry point, and search for exit surface:
+		assume surface is exit if there is at least 1cm gap
+		assume collision group is done when the gap is at least shell length
+	"""
 
 static func probe_thickness(
 	space_state: PhysicsDirectSpaceState3D,
@@ -64,7 +148,7 @@ static func _find_exit_point(														# TODO: both inefficient and might be
 	target_collider: CollisionObject3D,
 	direction_normalized: Vector3,
 	collision_mask: int
-) -> Array[Vector3]:
+) -> Vector3:
 	
 	var exclusion_list: Array[RID] = []
 	var start_point_exit = entry_point + direction_normalized * RAY_EXIT_ORIGIN_STEP
@@ -78,7 +162,7 @@ static func _find_exit_point(														# TODO: both inefficient and might be
 		if result.size() > 0: # Check if detected collision was the one expected
 			var exit_collider: CollisionObject3D = result.collider
 			if exit_collider == target_collider:
-				return [result.position] 
+				return result.position
 			else: # Exclude unwanted collider and check again
 				var unwanted_rid: RID = exit_collider.get_rid()
 				exclusion_list.append(unwanted_rid)
@@ -94,4 +178,4 @@ static func _find_exit_point(														# TODO: both inefficient and might be
 			start_point_exit = start_point_exit + direction_normalized * RAY_EXIT_ORIGIN_STEP
 			end_point_exit = end_point_exit - direction_normalized * RAY_LENGTH
 	
-	return []
+	return Vector3.INF

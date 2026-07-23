@@ -42,9 +42,9 @@ PREV:
 """
 """
 NOW:
-	- introduce early exit rotation
-	- figure out how to quickly calculate the penetration direction (should )
+	- introduce early exit rotation - this requires bundle raycasts
 	- rework collision to work as continuous check (sub-frame sim?) and work with entire series of colliders
+	- test and consider solution for partial collisions (1. side ray detects one more collider, 2. tight gaps between two colliders, 3. joint between two colliders)
 """
 """
 NEXT:
@@ -299,6 +299,7 @@ func _handle_penetration(packet: ResolutionPacket, impact_angle: float):
 
 ## Returns projectile velocity vector after the initial impact normalization
 func _normalize_projectile(impact_vector: Vector3, normalization_factor: float) -> void:
+	# TODO: introduce normalization logic
 	pass
 
 ## Rotates the shell around tip point. 
