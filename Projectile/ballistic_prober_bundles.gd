@@ -11,6 +11,15 @@ class ArmorProbingPacket:
 	var exit_point: Vector3
 	var thickness: float
 
+class ColliderProbingResult:
+	var entry_point: Vector3
+	var exit_point: Vector3
+	var collider: RID
+
+class CollisionGroupProbingResult:
+	var entry_point: Vector3
+	var exit_point: Vector3
+	var colliders: Array[ColliderProbingResult]
 
 
 static func probe_main_ray() -> void:
@@ -19,8 +28,8 @@ static func probe_main_ray() -> void:
 
 static func probe_secondary_rays() -> void:
 	pass
-	
-## TODO: rework the return type and structure
+
+
 static func get_collisions_along_path(
 	space_state: PhysicsDirectSpaceState3D,
 	origin_point: Vector3,
